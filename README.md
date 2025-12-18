@@ -1,59 +1,45 @@
 # Questie-335
-A fork of the WoW Classic Questie addon aiming to provide compatibility with Wrath of the Lich King client version 3.3.5a (12340).
-# Installation
-- [Download](https://github.com/widxwer/Questie/archive/refs/heads/335.zip) the archive.
-- Extract it into `Interface/AddOns/` directory, folder name should be `Questie-335`.
-- If you are playing on a custom server that emulates a previous expansion using the 3.3.5 client, you could add `-Classic` or `-TBC` to the addon folder name to load only the required files for the chosen expansion. In case your server doesn't provide a patch for a world map, you need to enable the in-game setting: `Options/Advanced/Use WotLK map data`.
 
-# Questie
+A fork of the WoW Classic **Questie** addon aiming to provide compatibility with **Ascension (Bronzebeard)**.
 
-[![Discord](https://img.shields.io/badge/discord-Questie-738bd7)](https://discord.gg/s33MAYKeZd)
-[![Stars](https://img.shields.io/github/stars/Questie/Questie)](https://img.shields.io/github/stars/Questie/Questie)
+## Installation
+- [Download](https://github.com/3majed/Questie-335/archive/refs/tags/beta.zip) the archive.
+- Extract it into the `Interface/AddOns/` directory. The folder name should be `Questie-335`.
+- If you are playing on a custom server that emulates a previous expansion using the **3.3.5** client, you can add `-Classic` or `-TBC` to the addon folder name to load only the required files for the chosen expansion.
+- If your server doesn't provide a patch for the world map, enable the in-game setting: `Options → Advanced → Use WotLK map data`.
 
-[![Downloads](https://img.shields.io/github/downloads/Questie/Questie/total.svg)](https://github.com/Questie/Questie/releases/)
-[![Downloads Latest](https://img.shields.io/github/downloads/Questie/Questie/v9.5.1/total.svg)](https://github.com/Questie/Questie/releases/latest)
-[![Date Latest](https://img.shields.io/github/release-date/Questie/Questie.svg)](https://github.com/Questie/Questie/releases/latest)
-[![Commits Since Latest](https://img.shields.io/github/commits-since/Questie/Questie/latest.svg)](https://github.com/Questie/Questie/commits/master)
+## Fixes
+- **Nameplates**
+  - Skips **Ascension Nameplates** and works with other addons.
 
+- **Tracker**
+  1. Compatible with the Ascension API and doesn't fail with auto-turn-in quests.
+  2. No more missing header issues.
+  3. Refreshes correctly when accepting, completing, or abandoning quests.
 
-## Download
-We suggest you use the [Curseforge Client](https://curseforge.overwolf.com/) to manage your Wow addons in general. You will find Questie [here on Curseforge](https://www.curseforge.com/wow/addons/questie).
+- **Tooltips**
+  1. Fixed all errors.
+  2. New: shows if an NPC drops an item that starts a quest.
 
-Alternatively you can always use [the latest GitHub release](https://github.com/Questie/Questie/releases/latest) and follow the [Installation Guide](https://github.com/Questie/Questie/wiki/Installation-Guide) in the Wiki to get the latest version of Questie up and running.
+- **Custom IDs**
+  - Supports large integer IDs.
 
-If you have problems, please read the [Frequently Asked Questions](https://github.com/Questie/Questie/wiki/FAQ-for-Classic-(1.13)).
+- **Minimap**
+  - Fixed errors when zooming the minimap.
 
+- **World Map**
+  1. Supports Ascension `WorldMapFrame` when minimized and draws icons correctly.
+  2. Works with **Mapster** and **Magnify-WotLK**.
 
-## Information
-- [Frequently Asked Questions](https://github.com/Questie/Questie/wiki/FAQ)
-- Come chat with us on [our Discord server](https://discord.gg/s33MAYKeZd).
-- You can use the [issue tracker](https://github.com/Questie/Questie/issues) to report bugs and post feature requests (requires a Github account).
-- When creating an issue please follow the templated structure to speed up a possible fix.
-- If you get an error message from the WoW client, please include the **complete** text or a screenshot of it in your report.
-    - You need to enter `/console scriptErrors 1` once in the ingame chat for Lua error messages to be shown. You can later disable them again with `/console scriptErrors 0`.
-
-Trust us it's (Good)!
-
-## Contribution
-
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-- We are happy about every help and contribution we get, so feel free to submit a Pull Request on Github
-- Translators can search for missing translations by: `["<yourLanguage>"] = false` (e.g. `["deDE"] = false`) and replace the `false` with a string of the new translation, e.g. `["<yourLanguage>"] = "YourTranslation"`. Current translations can be found in the [Translation folder](https://github.com/Questie/Questie/tree/master/Localization/Translations)
-- Additional information you might find interesting can be found [here](https://github.com/Questie/Questie/wiki/Contributing)
-
-### Unit Tests
-
-1. Install [busted](https://github.com/lunarmodules/busted) with `luarocks install busted`
-2. Run `busted -p ".test.lua" ."` in the root directory of the project
-3. When adding new tests, make sure to name them `<module>.test.lua` and place them next to the module
+- **New Content (Maps & Quests)**
+  - Currently supports **Elwynn Forest only**.
 
 
-## Donation
-If you'd like to support the development of Questie by donating, you can do so via PayPal:
-
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=JCUBJWKT395ME&source=url"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif"/></a>
 
 ## Features
+
+### Ascension Scaling system
+- Scaling all quest to character level like Ascension Scaling system
 
 ### Show quests on map
 - Show notes for quest start points, turn in points, and objectives.
@@ -77,27 +63,17 @@ If you'd like to support the development of Questie by donating, you can do so v
 - You can see party members quest progress on the tooltip.
 - At least Questie version 5.0.0 is required by everyone in the party for it to work, tell your friends to update!
 
-![QuestieComms](https://cdn.discordapp.com/attachments/263036731165638656/636099163460861962/unknown.png)
 
 ### Tooltips
 - Show tooltips on map notes and quest NPCs/objects.
 - Holding Shift while hovering over a map icon displays more information, like quest XP.
 
-![QuestXP](https://cdn.discordapp.com/attachments/579999220170227716/635540231306608641/unknown.png)
 
 #### Quest Information
-
-![TooltipDungeon](https://cdn.discordapp.com/attachments/579999220170227716/634656829619699712/unknown.png)
-
 - Event quests are shown when events are active!
 
-![Event](https://cdn.discordapp.com/attachments/263040777658171392/636159292336242688/unknown.png)
-
 #### Waypoints
-
 - Waypoint lines for quest givers showing their pathing.
-
-![Waypoints](https://media.discordapp.net/attachments/263040777658171392/643203302993035294/unknown.png)
 
 ### Journey Log
 - Questie records the steps of your journey in the "My Journey" window. (right-click on minimap button to open)
