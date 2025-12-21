@@ -51,10 +51,29 @@ function AscensionLoader:ApplyZoneTables()
 
     ZoneDB.private = ZoneDB.private or {}
     ZoneDB.private.uiMapIdToAreaId = ZoneDB.private.uiMapIdToAreaId or {}
+    ZoneDB.private.areaIdToUiMapId = ZoneDB.private.areaIdToUiMapId or {}
 
     for uiMapId, areaId in pairs(AscensionZoneTables.uiMapIdToAreaId) do
         if uiMapId and areaId and ZoneDB.private.uiMapIdToAreaId[uiMapId] == nil then
             ZoneDB.private.uiMapIdToAreaId[uiMapId] = areaId
+        end
+
+        -- Ascension uses custom map ids for spawns/waypoints (e.g. 1238 for Northshire Valley).
+        -- QuestieMap draws by converting AreaId->UiMapId, so register these ids as self-mapping.
+        if uiMapId and ZoneDB.private.areaIdToUiMapId[uiMapId] == nil then
+            ZoneDB.private.areaIdToUiMapId[uiMapId] = uiMapId
+        end
+    end
+
+    -- Also map parentMapIDs (e.g. 10138) to a usable uiMapId to avoid fallback errors.
+    if AscensionUiMapData and AscensionUiMapData.uiMapData then
+        for uiMapId, data in pairs(AscensionUiMapData.uiMapData) do
+            if uiMapId and ZoneDB.private.areaIdToUiMapId[uiMapId] == nil then
+                ZoneDB.private.areaIdToUiMapId[uiMapId] = uiMapId
+            end
+            if data and type(data.parentMapID) == "number" and ZoneDB.private.areaIdToUiMapId[data.parentMapID] == nil then
+                ZoneDB.private.areaIdToUiMapId[data.parentMapID] = uiMapId
+            end
         end
     end
 

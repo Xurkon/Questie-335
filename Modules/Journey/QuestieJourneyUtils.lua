@@ -48,5 +48,20 @@ function QuestieJourneyUtils:GetZoneName(id)
             break
         end
     end
+
+    -- Ascension can use custom UiMapIds for zones/sub-zones (e.g. 1238 Northshire Valley).
+    -- Those won't exist in l10n.zoneLookup (which is AreaId-based), so fallback to UiMapData / mapInfo.
+    if name == l10n("Unknown Zone") then
+        local uiMapData = QuestieCompat and QuestieCompat.UiMapData and QuestieCompat.UiMapData[id]
+        if uiMapData and uiMapData.name then
+            name = uiMapData.name
+        elseif QuestieCompat and QuestieCompat.C_Map and QuestieCompat.C_Map.GetMapInfo then
+            local mapInfo = QuestieCompat.C_Map.GetMapInfo(id)
+            if mapInfo and mapInfo.name then
+                name = mapInfo.name
+            end
+        end
+    end
+
     return name
 end

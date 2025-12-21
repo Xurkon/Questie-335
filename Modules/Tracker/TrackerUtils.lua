@@ -396,6 +396,21 @@ local function GetZoneNameByIDFallback(zoneId)
         end
     end
 
+    -- Ascension can use custom UiMapIds for zones/sub-zones (e.g. 1238 Northshire Valley).
+    -- Those won't exist in l10n.zoneLookup (which is AreaId-based), so fallback to UiMapData / mapInfo.
+    local uiMapData = QuestieCompat and QuestieCompat.UiMapData and QuestieCompat.UiMapData[zoneId]
+    if uiMapData and uiMapData.name then
+        zoneCache[zoneId] = uiMapData.name
+        return zoneCache[zoneId]
+    end
+    if C_Map and C_Map.GetMapInfo then
+        local mapInfo = C_Map.GetMapInfo(zoneId)
+        if mapInfo and mapInfo.name then
+            zoneCache[zoneId] = mapInfo.name
+            return zoneCache[zoneId]
+        end
+    end
+
     Questie:Debug(Questie.DEBUG_CRITICAL, "[GetZoneNameByIDFallback]: Unable to find a zone name for zoneId", zoneId)
 
     return "Unknown Zone"
