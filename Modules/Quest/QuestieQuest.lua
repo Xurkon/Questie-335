@@ -485,10 +485,13 @@ local hordeChampionMarkerQuests = {[13726] = true, [13727] = true, [13728] = tru
 ---@param questId number
 function QuestieQuest:CompleteQuest(questId)
     -- Skip quests which are turn in only and are not added to the quest log in the first place
-    if QuestiePlayer.currentQuestlog[questId] then
-        -- Reset quest flags of
-        QuestiePlayer.currentQuestlog[questId].WasComplete = nil
-        QuestiePlayer.currentQuestlog[questId].isComplete = nil
+    local questLogEntry = QuestiePlayer.currentQuestlog[questId]
+    if questLogEntry then
+        -- Only reset flags if the entry is a table (not a legacy number)
+        if type(questLogEntry) == "table" then
+            questLogEntry.WasComplete = nil
+            questLogEntry.isComplete = nil
+        end
         QuestiePlayer.currentQuestlog[questId] = nil;
     end
 
