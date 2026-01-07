@@ -22,6 +22,8 @@ AscensionZoneTables.uiMapIdToAreaId = AscensionZoneTables.uiMapIdToAreaId or {
 	[1240] = 85, -- Deathknell -> Tirisfal Glades
 	[1213] = 85, -- Night Web's Hollow -> Tirisfal Glades
 	[1245] = 215, -- Camp Narache -> Mulgore
+	[1225] = 215, -- The Venture Co. Mine -> Mulgore
+	[1224] = 215, -- Palemane Rock -> Mulgore
 	
 }
 
@@ -45,4 +47,6 @@ AscensionZoneTables.zoneSort = AscensionZoneTables.zoneSort or {
 	[2031] = "Moonlit Ossuary",
 	[1230] = "Upper Ban'ethil Barrow Den",
 	[1231] = "Lower Ban'ethil Barrow Den",
+	[1225] = "The Venture Co. Mine",
+	[1224] = "Palemane Rock",
 }

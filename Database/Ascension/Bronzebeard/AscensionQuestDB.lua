@@ -9,10 +9,12 @@ AscensionDB.questData = AscensionDB.questData or {
 		[1903540]={[1]="Path to Ascension: Visit an Innkeeper",[2]={{75118}},[3]={{75118}},[4]=7,[5]=8,[6]=0,[8]={"Visit an Innkeeper and select Make this inn your home."},[10]={nil,{{9903540,'Visit an Innkeeper and select "Make this inn your home": 0/1'}}},[17]=nil,[30]=60},
 		[580168]={[1]="Path to Ascension: Less Running, More Ressing",[2]={{75118}},[3]={{75118}},[4]=8,[5]=8,[6]=0,[8]={"Cast Resurrect in Closest Town or Capital City next time you die.","Resurrect in Closest Town or Capital: 0/1"},[10]={nil,{{9908168,"Resurrect in Closest Town or Capital: 0/1"}}},[17]=nil,[30]=60},
 		[4420430]={[1]="Path to Ascension: Novice Rider",[2]={{97921}},[3]={{97921}},[4]=6,[5]=8,[6]=0,[8]={"Learn how to ride and claim your first mount.","Learn Novice Riding from the Riding Trainer: 0/1"},[10]={nil,{{9942043,"Learn Novice Riding from the Riding Trainer: 0/1"}}},[17]=12,[30]=60},
-		[4420439] = {[1]="Path to Ascension: Novice Rider",[2]={{449169}},[4]=4,[5]=8,[6]=1101,[8]="Learn how to ride and claim your first mount.",[10]={nil,{{5773748,"Learn Novice Riding from the Riding Trainer: 0/1"}}},[17]=141,},
+		[4420439] = {[1]="Path to Ascension: Novice Rider",[2]={{449169}},[4]=4,[5]=8,[6]=1101,[8]="Learn how to ride and claim your first mount.",[10]={nil,{{9942043,"Learn Novice Riding from the Riding Trainer: 0/1"}}},[17]=141,},
 		[1903556]={[1]="Path to Ascension: Mount Up!",[2]={{97921,449169}},[3]={{97921,449169}},[4]=6,[5]=8,[6]=0,[8]={"Learn how to mount up!","Pets Tab (Shift+P), Mounts Tab, Summon Mount: 0/1"},[10]={nil,{{9903556,"Pets Tab (Shift+P), Mounts Tab, Summon Mount: 0/1"}}},[13]={4420430},[17]=12,[30]=60},
 		[1903553]={[1]="Path to Ascension: Dungeon Finder",[2]={{75118}},[3]={{75118}},[4]=15,[5]=15,[6]=0,[8]={"Open the Dungeon Finder and queue for a dungeon!","Open the Dungeon Finder (I) / Green Eye: 0/1","Select dungeon(s) then click Find Group: 0/1"},[10]={nil,{{9903553,"Open the Dungeon Finder (I) / Green Eye: 0/1"},{9903554,"Select dungeon(s) then click Find Group: 0/1"}}},[17]=12},
-
+		[4420435]={[1]="Path to Ascension: Novice Rider",[2]={{3690}},[4]=7,[5]=9,[6]=0,[7]=0,[8]={"Learn how to ride and claim your first mount."},[10]={nil,{{9942043,"Learn Novice Riding from the Riding Trainer: 0/1"}}},[17]=215},
+		[1903557]={[1]="Path to Ascension: Mount Up!",[2]={{3690}},[4]=7,[5]=9,[6]=0,[7]=0,[8]={"Learn how to mount up!"},[10]={nil,{{9903556,"Pets Tab (Shift+P), Mounts Tab, Summon Mount: 0/1"}}},[13]={4420435},[17]=215},
+		
 		--Elwynn Forest
 
 		[33]={[1]="Wolves Across the Border",[2]={{196}},[3]={{196}},[4]=1,[5]=2,[6]=1101,[7]=nil,[8]={"Bring 8 Diseased Wolf Pelts to Eagan Peltskinner outside Northshire Abbey."},[9]=nil,[10]={nil,nil,{{50432}}},[11]=nil,[12]=nil,[13]={5261},[14]=nil,[15]=nil,[16]=nil,[17]=9,[18]=nil,[19]=nil,[20]=nil,[21]=nil,[22]=nil,[23]=524296,[24]=nil,[25]=nil,[26]={{72,250}}},
@@ -71,6 +73,22 @@ AscensionDB.questData = AscensionDB.questData or {
 		[1660037]={[1]="Unease Makes Tongues Wag",[2]={{161733}},[3]={{161733}},[4]=3,[5]=6,[6]=0,[7]=0,[8]={"Destroy the talking Tiki Masks around Zeb'Goro."},[10]={{{161854},{161855},{161856}},nil,nil},[11]=559146,[13]={1660018},[17]=1244},
 		[1660041]={[1]="A Door Left Ajar",[2]={{161734}},[3]={{161734}},[4]=3,[5]=6,[6]=0,[7]=0,[8]={"Defeat Techla'tu, Gatekeeper, in the Sinister Lair."},[10]={{{161833},{161793},{161792}},nil,nil},[13]={1660019},[17]=2030},
 		[1660061]={[1]="Esgramor's Master",[2]={{161732}},[4]=4,[5]=8,[6]=0,[7]=0,[8]={"Speak with Karagar in Razor Hill."},[10]={nil,{{9070546}},nil},[13]={1660022},[17]=1244},
+
+		--Mulgore
+
+		[1660030] = {[1]="Death and Tribute",[2]={{161817}},[3]={{161818}},[4]=3,[5]=4,[6]=690,[8]="Slay seven Grimtotem Marauders in Red Cloud Mesa, take their manes as proof, and deliver them to Lady Redhorn’s mistress.",[10]={nil,nil,{{559156}}},[17]=1245},
+		[1660031]={[1]="Death and Exile",[2]={{161818}},[3]={{161819}},[4]=3,[5]=6,[5]=0,[7]=0,[8]={"Follow the Grimtotem Mountain Path to Hard Basin and show Morriga Hollowhoof’s ring to Sage Nauchol."},[10]={nil,{{5976414}},nil},[11]=559157,[13]={1660030},[17]=1245},
+		[1660032]={[1]="Death and Dishonor",[2]={{161819}},[3]={{161819}},[4]=3,[5]=5,[6]=0,[7]=0,[8]={"Gather pieces of armor and the identifying pendant of Three Totems warriors to complete your disguise."},[10]={nil,nil,{{559151},{559152}}},[11]=559151,[13]={1660031},[17]=1245},
+		[1660033]={[1]="Death and Justice",[2]={{161819}},[3]={{161818}},[4]=3,[5]=5,[6]=0,[7]=0,[8]={"Speak with Nauchol when you are ready for the disguise, then infiltrate Three Totems and slay Malgorm Hollowhoof."},[10]={{{161816}},{{1942447}}},[13]={1660032},[17]=1245,[27]={{nil,4,"Ask Nauchol to dress you in the disguise",0,{{"object",1942447}}},{nil,1,"Malgorm Hollowhoof",0,{{"monster",161816}}}}},
+		[1660034]={[1]="Death by Laughter",[2]={{161840}},[3]={{161840}},[4]=3,[5]=5,[6]=0,[7]=0,[8]={"Channel the Great Hyena’s blessing into the village totems and defeat the guardian spirits that protect them."},[10]={{{161850},{161851},{161852}},{{2300527},{2300533},{2300534}},nil},[13]={1660032},[17]=1245},
+		[1660035]={[1]="To Whom I Devote",[2]={{161818}},[3]={{161840}},[4]=3,[5]=5,[6]=0,[7]=0,[8]={"Gather bones along the mountain path and offer them at the Great Hyena’s altar in Hard Basin."},[10]={nil,nil,{{559168}}},[11]=559168,[13]={1660030},[17]=1245},
+		[1660043]={[1]="Fighting Over Carrion",[2]={{161840}},[3]={{161840}},[4]=3,[5]=5,[6]=0,[7]=0,[8]={"Defeat the Cruel Carrion Spirit in Hard Basin."},[10]={{{161834}},nil,nil},[13]={1660035},[17]=1245},
+		[1660066]={[1]="Smoke on the Horizon",[2]={{162902}},[3]={{162903}},[4]=3,[5]=6,[6]=0,[7]=0,[8]={"Speak with Ammus Grey-Eye at the summit of the Iris Sanctuary."},[13]={1660033},[17]=1245},
+		[1660067] = {[1]="Amphora of Sacred Water",[2]={{162903}},[3]={{162906}},[4]=4,[5]=8,[6]=690,[8]="Fill the amphora with the blessed water of the Iris Sanctuary, and bring it to Sage Muudren in Bloodhoof Village.",[10]={nil,{{5195713},{5195711}},{{558972}}},[11]=558971,[13]={1660066},[17]=1245},
+		[1660070] = {[1]="Stay a While",[2]={{162903}},[3]={{162903}},[4]=4,[5]=8,[6]=690,[8]="Take a moment from the noise and haste and stay a while to listen to Ammus Grey-Eye.",[10]={nil,{{5299566}}},[13]={1660066},[17]=1245},
+		[1660068]={[1]="Exile of Embers",[2]={{162906}},[3]={{162906}},[4]=6,[5]=8,[6]=0,[7]=0,[8]={"Channel the blessing to weaken the fire elementals prowling around Ardunno's hut and banish them back to their elemental plane."},[10]={{{162907}},nil,nil},[11]=558967,[13]={1660067},[17]=1412},
+		[1660069] = {[1]="The Smoke that Remembers",[2]={{162908}},[3]={{162908}},[4]=4,[5]=8,[6]=690,[8]="Obtain incense for Ancestor Emnil's altar. You will need Prairie Sage and Kodo Tallow.",[10]={nil,nil,{{558968},{558969}}},[13]={1660067},[17]=1412},
+		[500004] = {[1]="The Circle’s Rite",[2]={{991485}},[3]={{991485}},[4]=6,[5]=10,[6]=690,[8]="Collect 8 Ritual Totems and bring them to Maur Tharok Windhoof at Stonefather's Circle.",[10]={nil,nil,{{662335}}},[17]=1412},
 
 
 }

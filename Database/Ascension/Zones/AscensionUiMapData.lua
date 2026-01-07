@@ -238,6 +238,28 @@ AscensionUiMapData.uiMapData = {
         mapType = 3,
         parentMapID = 10146,
     },
+        [1225] = {
+        [1] = 741.0,
+        [2] = 494.0,
+        [3] = -818.0,
+        [4] = -1436.0,
+        instance = 1,
+        mapID = 1225,
+        name = "The Venture Co. Mine",
+        mapType = 3,
+        parentMapID = 10129,
+    },
+        [1224] = {
+        [1] = 350.01,
+        [2] = 233.32999999999993,
+        [3] = 580.0,
+        [4] = -2263.33,
+        instance = 1,
+        mapID = 1224,
+        name = "Palemane Rock",
+        mapType = 3,
+        parentMapID = 10128,
+    },
 }
 
 local function ApplyUiMapData()
