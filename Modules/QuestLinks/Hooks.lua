@@ -18,7 +18,7 @@ function Hooks:HookQuestLogTitle()
 
     -- We can not use hooksecurefunc because this needs to be a pre-hook to work properly unfortunately
     QuestLogTitleButton_OnClick = function(self, button)
-        if (not self) or self.isHeader or (not IsShiftKeyDown()) then
+        if (not self) or self.isHeader then
             baseQLTB_OnClick(self, button)
             return
         end
@@ -31,6 +31,7 @@ function Hooks:HookQuestLogTitle()
             questLogLineIndex = self:GetID() + FauxScrollFrame_GetOffset(QuestLogListScrollFrame)
         end
 
+        -- Handle Shift+Click quest linking
         if (IsModifiedClick("CHATLINK") and ChatEdit_GetActiveWindow()) then
             -- Follow Ascension's exact native pattern
             local questLink = GetQuestLink(questLogLineIndex)
@@ -38,16 +39,18 @@ function Hooks:HookQuestLogTitle()
                 ChatEdit_InsertLink(questLink)
             end
             QuestLog_SetSelection(questLogLineIndex)
+            return
+        end
+
+        -- For all other clicks (including tracking/untracking), use the original function
+        -- only call Questie's tracker if we actually want to fix this quest (normal quests already call AQW_insert)
+        if Questie.db.profile.trackerEnabled and GetNumQuestLeaderBoards(questLogLineIndex) == 0 and (not IsQuestWatched(questLogLineIndex)) then
+            QuestieTracker:AQW_Insert(questLogLineIndex, QUEST_WATCH_NO_EXPIRE)
+            WatchFrame_Update()
+            QuestLog_SetSelection(questLogLineIndex)
+            QuestLog_Update()
         else
-            -- only call if we actually want to fix this quest (normal quests already call AQW_insert)
-            if Questie.db.profile.trackerEnabled and GetNumQuestLeaderBoards(questLogLineIndex) == 0 and (not IsQuestWatched(questLogLineIndex)) then
-                QuestieTracker:AQW_Insert(questLogLineIndex, QUEST_WATCH_NO_EXPIRE)
-                WatchFrame_Update()
-                QuestLog_SetSelection(questLogLineIndex)
-                QuestLog_Update()
-            else
-                baseQLTB_OnClick(self, button)
-            end
+            baseQLTB_OnClick(self, button)
         end
     end
 end

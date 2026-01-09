@@ -172,6 +172,17 @@ AscensionUiMapData.uiMapData = {
 		},
 
 	-- Horde Starting Zone
+        [1219] = {
+        [1] = 270.0,
+        [2] = 180.0,
+        [3] = -4629.0,
+        [4] = 1580.5,
+        instance = 1,
+        mapID = 1219,
+        name = "Skull Rock",
+        mapType = 3,
+        parentMapID = 10123,
+    },
         [2030] = {
         [1] = 550.29,
         [2] = 366.6328125,

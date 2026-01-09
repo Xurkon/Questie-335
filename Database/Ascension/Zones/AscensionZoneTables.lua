@@ -19,6 +19,7 @@ AscensionZoneTables.uiMapIdToAreaId = AscensionZoneTables.uiMapIdToAreaId or {
 	[1244] = 14, -- Valley of Trials -> Durotar
 	[1217] = 14, -- Burning Blade Coven -> Durotar
 	[2030] = 14, -- Sinister Lair -> Durotar
+	[1219] = 14, -- Skull Rock -> Durotar
 	[1240] = 85, -- Deathknell -> Tirisfal Glades
 	[1213] = 85, -- Night Web's Hollow -> Tirisfal Glades
 	[1245] = 215, -- Camp Narache -> Mulgore
@@ -49,4 +50,5 @@ AscensionZoneTables.zoneSort = AscensionZoneTables.zoneSort or {
 	[1231] = "Lower Ban'ethil Barrow Den",
 	[1225] = "The Venture Co. Mine",
 	[1224] = "Palemane Rock",
+	[1219] = "Skull Rock",
 }
