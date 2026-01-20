@@ -18,8 +18,10 @@ AscensionDB.questData = AscensionDB.questData or {
 		[4420432] = {[1]="Path to Ascension: Novice Rider",[2]={{7954}},[3]={{7954}},[4]=5,[5]=9,[6]=1101,[8]="Learn how to ride and claim your first mount.",[10]={nil,{{9942043,"Learn Novice Riding from the Riding Trainer: 0/1"}}},[17]=1},
 		[4420434]={[1]="Path to Ascension: Novice Rider",[2]={{4773}},[3]={{4773}},[4]=6,[5]=8,[6]=690,[7]=0,[8]={"Learn how to ride and claim your first mount."},[10]={nil,{{9942043,"Learn Novice Riding from the Riding Trainer: 0/1"}}},[17]=85},
 		[100466]={[1]="Path to Ascension: Westfall",[2]={{466}},[4]=10,[5]=12,[6]=0,[7]=0,[8]={"Explore Stormwind to your heart's content, then visit Flightmaster Dungar Longdrink to fly to Westfall to continue your adventure."},[10]={nil,{{4673875}}},[17]=1519},
-
-			--Elwynn Forest
+		[1903555] = {[1]="Path to Ascension: Faster Riding!",[2]={{4732}},[3]={{4732}},[4]=20,[5]=20,[6]=1101,[8]="Visit any Riding Trainer to learn Apprentice Riding Training.",[10]={nil,{{9942039}}},[17]=nil},
+		[580170] = {[1]="Path to Ascension: Epic Riding",[2]={{75118}},[4]=26,[5]=30,[6]=0,[8]="Learn Journeyman Riding.",[10]={nil,{{9942038}}},[17]=nil},
+		
+		--Elwynn Forest
 
 		[17000]={[1]="Stolen Supplies",[2]={{250}},[3]={{250}},[4]=5,[5]=9,[6]=1101,[7]=nil,[8]={"Return the Stolen Supplies to Pa Maclure."},[9]=nil,[10]={nil,{{96000,"Retrieve the Stolen Supplies"}}},[11]=nil,[12]=nil,[13]=nil,[14]=nil,[15]=nil,[16]=nil,[17]=12,[18]=nil,[19]=nil,[20]=nil,[21]=nil,[22]=nil,[23]=nil,[24]=nil,[25]=nil,[26]={{72,25}}},
 		[100073]={[1]="Supply Run",[2]={{241}},[3]={{241}},[4]=6,[5]=8,[6]=1101,[7]=nil,[8]={"","Recover 4 Stolen Supply Crates from the Bandit Bastion, east of Goldshire.","","- Stolen Goods x 4"},[9]=nil,[10]={nil,{{9900730,"Stolen Supply Crate"}}},[11]=nil,[12]=nil,[13]={47},[14]=nil,[15]=nil,[16]=nil,[17]=12},
@@ -46,6 +48,22 @@ AscensionDB.questData = AscensionDB.questData or {
 		[1660060]={[1]="Stay a While",[2]={{162806}},[3]={{162806}},[4]=6,[5]=8,[6]=1101,[7]=nil,[8]={"","Take a moment from the noise and haste and stay a while to listen to Aliscar Lend.","","- Listen to Aliscar Lend x 1"},[9]=nil,[10]={[1]={{162943,"Listen to Aliscar Lend"}}},[11]=nil,[12]=nil,[13]=nil,[14]=nil,[15]=nil,[16]=nil,[17]=12},
 		[100071]={[1]="Defias Disruption",[2]={{6778}},[3]={{6778}},[4]=6,[5]=8,[6]=1101,[7]=nil,[8]={"","Thin the ranks of the Defias at the Bandit Bastion, east of Goldshire.","","- Defias Bandit x 6","- Defias Rogue Wizard x 4"},[9]=nil,[10]={[1]={{116,"Defias Bandit slain"},{474,"Defias Rogue Wizard slain"}}},[11]=nil,[12]=nil,[13]={47},[14]=nil,[15]=nil,[16]=nil,[17]=12},
 		 
+		--Westfall
+
+		[17014] = {[1]="The Killing Fields",[2]={{233}},[3]={{233}},[4]=14,[5]=18,[6]=1101,[8]="Farmer Saldean wants you to kill 15 Harvest Reapers.",[10]={{{115}},nil,nil},[13]={{9},{38}},[17]=40},
+		[17011] = {[1]="Riverpaw Genocide",[2]={{157002}},[3]={{157002}},[4]=13,[5]=17,[6]=1101,[8]="Slay 8 Riverpaw Brutes, 12 Riverpaw Mongrels, and 10 Riverpaw Herbalists.",[10]={{{124},{123},{501}},nil,nil},[17]=40},
+		[17012] = {[1]="Riverpaw Genocide",[2]={{157002}},[3]={{157002}},[4]=13,[5]=17,[6]=0,[8]="Slay 12 Riverpaw Bandits, 10 Riverpaw Taskmasters, and 8 Riverpaw Mystics.",[10]={{{452},{98},{453}},nil,nil},[13]={17011},[17]=40},
+		[254042] = {[1]="Wanted: Lenore the Hoarder",[2]={{518551}},[3]={{490}},[4]=12,[5]=16,[6]=1101,[8]="Kill Lenore the Hoarder and return to Protector Gariel at Sentinel Hill.",[10]={{{991515}},nil,nil},[17]=40},
+		[254043] = {[1]="Take It Back",[2]={{490}},[3]={{490}},[4]=12,[5]=16,[6]=1101,[8]="Protector Gariel wants you to gather Westfall Supplies, then return to her at Sentinel Hill.",[10]={nil,nil,{{1252801}}},[17]=40},
+		
+		--Redridge Mountains
+
+		[254071] = {[1]="The Rookery",[2]={{991474}},[3]={{991474}},[4]=15,[5]=19,[6]=1101,[8]="Obtain a Pristine Black Dragon Egg",[10]={nil,nil,{{354661}}},[17]=44},
+		[254067] = {[1]="Minervia's Legacy",[2]={{991476}},[3]={{346}},[4]=21,[5]=25,[6]=1101,[8]="Search the Three Corners Tower and Lakeshire for clues to Archmage Minervia's staff.",[10]={nil,{{5765486},{5765487}},nil},[17]=44},
+		[254070] = {[1]="Lost Secrets",[2]={nil,{518612},nil},[3]={nil,{518612},nil},[4]=22,[5]=26,[6]=1101,[8]="Recover the Codex of Secrets' lost page.",[10]={nil,nil,{{354660}}},[17]=44}, 
+		[254068] = {[1]="Minervia's Past",[2]={{346}},[3]={{254969}},[4]=21,[5]=25,[6]=1101,[8]="Investigate the Tower of Ilgalar for clues to Archmage Minervia's disappearance.",[10]={nil,{{5806332}},nil},[13]={254067},[17]=44},
+		[254069] = {[1]="Minervia's Fate",[2]={{254969}},[3]={{991476}},[4]=25,[5]=29,[6]=1101,[8]="Investigate the grave at Lakeshire.",[10]={nil,{{5253244}},{{354659}}},[13]={254068},[17]=44},
+
 		--Dun Morogh
 
 		[254000] = {[1]="A Small Mistake",[2]={{254000}},[3]={{254000}},[4]=2,[5]=2,[6]=1101,[8]="Search the Frostmane Encampment for Clues.",[10]={nil,nil,{{254000}}},[17]=1239},

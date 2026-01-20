@@ -18,6 +18,9 @@ AscensionZoneTables.uiMapIdToAreaId = AscensionZoneTables.uiMapIdToAreaId or {
 	[2031] = 141, -- Moonlit Ossuary -> Teldrassil
 	[1230] = 141, -- Upper Ban'ethil Barrow Den -> Teldrassil
 	[1231] = 141, -- Lower Ban'ethil Barrow Den -> Teldrassil
+	[1237] = 40, -- Jangolode Mine -> Westfall
+	[1235] = 40, -- Deadmines Westfall -> Westfall
+	[1236] = 40, -- Gold Coast Quarry -> Westfall
 	--Horde
 	[1244] = 14, -- Valley of Trials -> Durotar
 	[1217] = 14, -- Burning Blade Coven -> Durotar
@@ -57,4 +60,7 @@ AscensionZoneTables.zoneSort = AscensionZoneTables.zoneSort or {
 	[1219] = "Skull Rock",
 	[1216] = "The Grizzled Den",
 	[1214] = "Gol'bolar Quarry",
+	[1237] = "Jangolode Mine",
+	[1235] = "Deadmines Westfall",
+	[1236] = "Gold Coast Quarry",
 }

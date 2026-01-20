@@ -111,12 +111,17 @@ local function _PlayerHasQuest(questId)
         return true
     end
 
-    -- 2) Turned in / completed
+    -- 2) Completed (Questie's own completion cache; reliable even when the core API isn't)
+    if Questie and Questie.db and Questie.db.char and Questie.db.char.complete and Questie.db.char.complete[questId] then
+        return true
+    end
+
+    -- 3) Turned in / completed (game/core API)
     if IsQuestFlaggedCompleted and IsQuestFlaggedCompleted(questId) then
         return true
     end
 
-    -- Optional fallback (some cores implement this reliably)
+    -- 4) Optional fallback (some cores implement this reliably)
     if GetQuestLogIndexByID then
         local idx = GetQuestLogIndexByID(questId)
         if idx and idx > 0 then
