@@ -53,6 +53,9 @@ function AscensionLoader:ApplyZoneTables()
     ZoneDB.private.uiMapIdToAreaId = ZoneDB.private.uiMapIdToAreaId or {}
     ZoneDB.private.areaIdToUiMapId = ZoneDB.private.areaIdToUiMapId or {}
     ZoneDB.private.subZoneToParentZone = ZoneDB.private.subZoneToParentZone or {}
+    ZoneDB.private.dungeons = ZoneDB.private.dungeons or {}
+    ZoneDB.private.dungeonLocations = ZoneDB.private.dungeonLocations or {}
+    ZoneDB.private.dungeonParentZones = ZoneDB.private.dungeonParentZones or {}
 
     for uiMapId, areaId in pairs(AscensionZoneTables.uiMapIdToAreaId) do
         if uiMapId and areaId then
@@ -62,10 +65,42 @@ function AscensionLoader:ApplyZoneTables()
             -- Ascension uses custom map ids for spawns/waypoints (e.g. 1238 for Northshire Valley).
             -- QuestieMap draws by converting AreaId->UiMapId, so register these ids as self-mapping.
             ZoneDB.private.areaIdToUiMapId[uiMapId] = uiMapId
+
+            -- If this uiMapId represents a *dungeon* map, prefer it for that dungeon's AreaId.
+            -- This keeps normal zones intact (e.g. Elwynn stays 1429), while letting Ascension
+            -- provide real instance maps (e.g. mapID 691 for The Stockade).
+            if type(ZoneDB.private.dungeons) == "table" and ZoneDB.private.dungeons[areaId] then
+                ZoneDB.private.areaIdToUiMapId[areaId] = uiMapId
+            end
             
             -- Register subzone to parent zone mapping so GetParentZoneId works with Ascension zones
             if uiMapId ~= areaId then
                 ZoneDB.private.subZoneToParentZone[uiMapId] = areaId
+            end
+        end
+    end
+
+    -- Optional: allow Ascension to define custom dungeon zones/entrances without touching core tables.
+    if type(AscensionZoneTables.dungeons) == "table" then
+        for areaId, data in pairs(AscensionZoneTables.dungeons) do
+            if areaId and data then
+                ZoneDB.private.dungeons[areaId] = data
+            end
+        end
+    end
+
+    if type(AscensionZoneTables.dungeonLocations) == "table" then
+        for areaId, data in pairs(AscensionZoneTables.dungeonLocations) do
+            if areaId and data then
+                ZoneDB.private.dungeonLocations[areaId] = data
+            end
+        end
+    end
+
+    if type(AscensionZoneTables.dungeonParentZones) == "table" then
+        for subZoneId, parentZoneId in pairs(AscensionZoneTables.dungeonParentZones) do
+            if subZoneId and parentZoneId then
+                ZoneDB.private.dungeonParentZones[subZoneId] = parentZoneId
             end
         end
     end

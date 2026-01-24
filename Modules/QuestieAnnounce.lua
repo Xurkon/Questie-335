@@ -145,9 +145,13 @@ function QuestieAnnounce:ItemLooted(text, notPlayerName, _, _, playerName)
         -- check QueryItemSingle because this event can fire before db init is complete
         if (startQuestId == nil) and QuestieDB.QueryItemSingle then
             startQuestId = QuestieDB.QueryItemSingle(itemId, "startQuest")
+            -- Handle table format {questId} from Ascension database
+            if type(startQuestId) == "table" and startQuestId[1] then
+                startQuestId = startQuestId[1]
+            end
             -- filter 0 values away so itemCache value is a valid questId if it evaluates to true
             -- we do "or false" here because nil would mean not cached
-            startQuestId = (startQuestId and startQuestId > 0) and startQuestId or false
+            startQuestId = (startQuestId and type(startQuestId) == "number" and startQuestId > 0) and startQuestId or false
             itemCache[itemId] = startQuestId
         end
 

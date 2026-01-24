@@ -30,6 +30,7 @@ AscensionDB.itemData = AscensionDB.itemData or {
 		--Westfall
 
 		[1252801] = {[1]="Westfall Supplies",[3]={25423},[9]=1,[10]=0,[12]=12,[13]=0,[15]={254043}},
+		[157021] = {[1]="Defias Trade Agreement",[2]={7053},[3]=nil,[4]=nil,[5]={17013},[6]=nil,[7]=nil,[8]=nil,[9]=20,[10]=18,[11]=nil,[12]=nil,[12]=12,[13]=0,[15]={17013}},
 
 		--Redridge Mountains
 

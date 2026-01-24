@@ -41,10 +41,19 @@ local BY_ID = 2
 local function AddParagraph(frame, lookupObject, secondKey, header, query)
     if lookupObject[secondKey] then
         QuestieJourneyUtils:AddLine(frame,  Questie:Colorize(header, "yellow"))
-        for _,id in pairs(lookupObject[secondKey]) do
-            local name = query(id, "name")
+        local dataValue = lookupObject[secondKey]
+        -- Handle both table and single number values
+        if type(dataValue) == "table" then
+            for _,id in pairs(dataValue) do
+                local name = query(id, "name")
+                if name then
+                    QuestieJourneyUtils:AddLine(frame, name.." ("..id..")")
+                end
+            end
+        elseif type(dataValue) == "number" then
+            local name = query(dataValue, "name")
             if name then
-                QuestieJourneyUtils:AddLine(frame, name.." ("..id..")")
+                QuestieJourneyUtils:AddLine(frame, name.." ("..dataValue..")")
             end
         end
     end

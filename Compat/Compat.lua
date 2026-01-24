@@ -1672,7 +1672,13 @@ function QuestieCompat:ADDON_LOADED(event, addon)
     QuestieCompat.LoadUiMapData(Questie.db.profile.useWotlkMapData and QuestieCompat.WOW_PROJECT_WRATH_CLASSIC)
 
     for uiMapId, data in pairs(QuestieCompat.UiMapData) do
-        mapIdToUiMapId[data.mapID] = uiMapId
+        if type(data.mapID) == "table" then
+            for _, mapID in ipairs(data.mapID) do
+                mapIdToUiMapId[mapID] = uiMapId
+            end
+        else
+            mapIdToUiMapId[data.mapID] = uiMapId
+        end
     end
 
     for k, patterns in pairs(chatMessagePattern) do

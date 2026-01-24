@@ -137,46 +137,106 @@ local function _TryBuildNpcQuestStarterDrops()
         return true
     end
 
-    -- DB not ready yet? Try again later.
-    if not QuestieDB or type(QuestieDB.QueryItemSingle) ~= "function" then
-        return false
-    end
-
-    local pointers = _GetItemPointers()
-    if type(pointers) ~= "table" then
-        return false
-    end
-
     _npcQuestStarterDrops = {}
 
     -- Helper function to process an item and add it to the lookup table
     local function processItem(itemId)
-        local questId = QuestieDB.QueryItemSingle(itemId, "startQuest")
+        local questId, npcDrops, itemName
+
+        -- First try QuestieDB for standard items
+        if QuestieDB and type(QuestieDB.QueryItemSingle) == "function" then
+            questId = QuestieDB.QueryItemSingle(itemId, "startQuest")
+            npcDrops = QuestieDB.QueryItemSingle(itemId, "npcDrops")
+            itemName = QuestieDB.QueryItemSingle(itemId, "name")
+            
+            -- Handle table format {questId} from QueryItemSingle
+            if type(questId) == "table" and questId[1] then
+                questId = questId[1]
+            end
+        end
+
+        -- If QueryItemSingle didn't find it, try Ascension databases directly
+        if not questId or not npcDrops then
+            local itemData = nil
+            if _G.AscensionDB and _G.AscensionDB.itemData then
+                itemData = _G.AscensionDB.itemData[itemId]
+            end
+            if not itemData and _G.AscensionItemDB and _G.AscensionItemDB.itemData then
+                itemData = _G.AscensionItemDB.itemData[itemId]
+            end
+
+            if itemData then
+                -- Ascension item structure: [1]=name, [2]=npcDrops, [5]=startQuest
+                if not itemName and itemData[1] then
+                    itemName = itemData[1]
+                end
+                if not npcDrops and itemData[2] then
+                    npcDrops = itemData[2]
+                end
+                if not questId and itemData[5] then
+                    questId = itemData[5]
+                    -- Handle table format {questId} or direct questId
+                    if type(questId) == "table" and questId[1] then
+                        questId = questId[1]
+                    end
+                end
+            end
+        end
+
         if questId and questId ~= 0 then
-            local npcDrops = QuestieDB.QueryItemSingle(itemId, "npcDrops")
             if npcDrops and type(npcDrops) == "table" then
-                local itemName = QuestieDB.QueryItemSingle(itemId, "name")
                 for _, npcId in pairs(npcDrops) do
                     local list = _npcQuestStarterDrops[npcId]
                     if not list then
                         list = {}
                         _npcQuestStarterDrops[npcId] = list
                     end
-                    list[#list + 1] = { itemId = itemId, questId = tonumber(questId), name = itemName }
+                    local numQuestId = tonumber(questId)
+                    if numQuestId then
+                        -- Check if this item is already in the list for this NPC
+                        local alreadyExists = false
+                        for _, existing in ipairs(list) do
+                            if existing.itemId == itemId then
+                                alreadyExists = true
+                                break
+                            end
+                        end
+                        
+                        if not alreadyExists then
+                            list[#list + 1] = { itemId = itemId, questId = numQuestId, name = itemName }
+                        end
+                    end
                 end
             end
         end
     end
 
-    -- Iterate all items from compiled database
-    for itemId, _ in pairs(pointers) do
-        processItem(itemId)
+    -- Iterate all items from compiled database (if pointers exist)
+    local pointers = _GetItemPointers()
+    if type(pointers) == "table" then
+        for itemId, _ in pairs(pointers) do
+            processItem(itemId)
+        end
     end
 
     -- Also iterate Ascension override items (they don't have pointers)
-    if QuestieDB.itemDataOverrides and type(QuestieDB.itemDataOverrides) == "table" then
+    if QuestieDB and QuestieDB.itemDataOverrides and type(QuestieDB.itemDataOverrides) == "table" then
         for itemId, _ in pairs(QuestieDB.itemDataOverrides) do
             processItem(itemId)
+        end
+    end
+
+    -- ALWAYS check AscensionDB.itemData for Ascension-specific items
+    if _G.AscensionDB and type(_G.AscensionDB.itemData) == "table" then
+        for itemId, _ in pairs(_G.AscensionDB.itemData) do
+            processItem(tonumber(itemId))
+        end
+    end
+
+    -- Also check AscensionItemDB.itemData as a fallback
+    if _G.AscensionItemDB and type(_G.AscensionItemDB.itemData) == "table" then
+        for itemId, _ in pairs(_G.AscensionItemDB.itemData) do
+            processItem(tonumber(itemId))
         end
     end
 
@@ -204,6 +264,7 @@ local function _AddQuestStarterDropsToTooltip(npcId)
     if not _npcQuestStarterDrops then return end
 
     local drops = _npcQuestStarterDrops[npcId]
+    
     if not drops or #drops == 0 then return end
 
     if _TooltipHasQuestStarterLine(GameTooltip) then
