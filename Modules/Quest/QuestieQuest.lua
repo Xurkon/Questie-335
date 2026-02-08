@@ -112,7 +112,8 @@ function _QuestieQuest:ShowQuestIcons()
                 ---@type IconFrame
                 local icon = _G[frameName];
                 if not icon.data then
-                    error("Desync! Icon has not been removed correctly, but has already been reset. Skipping frame \"" .. frameName .. "\" for quest " .. questId)
+                    error("Desync! Icon has not been removed correctly, but has already been reset. Skipping frame \"" ..
+                        frameName .. "\" for quest " .. questId)
                 else
                     local objectiveString = tostring(questId) .. " " .. tostring(icon.data.ObjectiveIndex)
                     if (not Questie.db.char.TrackerHiddenObjectives) or (not Questie.db.char.TrackerHiddenObjectives[objectiveString]) then
@@ -262,7 +263,7 @@ function QuestieQuest:ClearAllToolTips()
     end
 
     QuestieTooltips.lookupByKey = {}
-    QuestieTooltips.lookupKeyByQuestId = {}
+    QuestieTooltips.lookupKeysByQuestId = {}
 end
 
 -- This is only needed for SmoothReset(), normally special objectives don't need to update
@@ -271,9 +272,12 @@ local function _UpdateSpecials(questId)
     local quest = QuestieDB.GetQuest(questId)
     if quest and next(quest.SpecialObjectives) then
         for _, objective in pairs(quest.SpecialObjectives) do
-            local result, err = xpcall(QuestieQuest.PopulateObjective, ERR_FUNCTION, QuestieQuest, quest, 0, objective, true)
+            local result, err = xpcall(QuestieQuest.PopulateObjective, ERR_FUNCTION, QuestieQuest, quest, 0, objective,
+                true)
             if not result then
-                Questie:Error("[QuestieQuest]: [SpecialObjectives] " .. l10n("There was an error populating objectives for %s %s %s %s", quest.name or "No quest name", quest.Id or "No quest id", 0 or "No objective", err or "No error"));
+                Questie:Error("[QuestieQuest]: [SpecialObjectives] " ..
+                    l10n("There was an error populating objectives for %s %s %s %s", quest.name or "No quest name",
+                        quest.Id or "No quest id", 0 or "No objective", err or "No error"));
             end
         end
     end
@@ -296,7 +300,9 @@ function QuestieQuest:SmoothReset()
             return QuestLogCache.TestGameCache()
         end,
         function()
-            return #QuestieMap._mapDrawQueue == 0 and #QuestieMap._minimapDrawQueue == 0 -- wait until draw queue is finished
+            return #QuestieMap._mapDrawQueue == 0 and
+                #QuestieMap._minimapDrawQueue ==
+                0 -- wait until draw queue is finished
         end,
         function()
             QuestieQuest:ClearAllNotes()
@@ -308,7 +314,9 @@ function QuestieQuest:SmoothReset()
             return true
         end,
         function()
-            return #QuestieMap._mapDrawQueue == 0 and #QuestieMap._minimapDrawQueue == 0 -- wait until draw queue is finished
+            return #QuestieMap._mapDrawQueue == 0 and
+                #QuestieMap._minimapDrawQueue ==
+                0 -- wait until draw queue is finished
         end,
         function()
             -- reset quest log
@@ -354,7 +362,8 @@ function QuestieQuest:SmoothReset()
             return not QuestieQuest._nextRestQuest
         end,
         function()
-            return (not QuestieQuest._resetNeedsAvailables) and #QuestieMap._mapDrawQueue == 0 and #QuestieMap._minimapDrawQueue == 0
+            return (not QuestieQuest._resetNeedsAvailables) and #QuestieMap._mapDrawQueue == 0 and
+                #QuestieMap._minimapDrawQueue == 0
         end,
         function()
             QuestieQuest._isResetting = nil
@@ -391,7 +400,8 @@ function QuestieQuest:ShouldShowQuestNotes(questId)
     end
 
     local autoWatch = Questie.db.profile.autoTrackQuests
-    local trackedAuto = autoWatch and (not Questie.db.char.AutoUntrackedQuests or not Questie.db.char.AutoUntrackedQuests[questId])
+    local trackedAuto = autoWatch and
+        (not Questie.db.char.AutoUntrackedQuests or not Questie.db.char.AutoUntrackedQuests[questId])
     local trackedManual = not autoWatch and (Questie.db.char.TrackedQuests and Questie.db.char.TrackedQuests[questId])
     return trackedAuto or trackedManual
 end
@@ -407,8 +417,30 @@ function QuestieQuest:UnhideQuest(id)
     AvailableQuests.CalculateAndDrawAll()
 end
 
-local allianceTournamentMarkerQuests = {[13684] = true, [13685] = true, [13688] = true, [13689] = true, [13690] = true, [13593] = true, [13703] = true, [13704] = true, [13705] = true, [13706] = true}
-local hordeTournamentMarkerQuests = {[13691] = true, [13693] = true, [13694] = true, [13695] = true, [13696] = true, [13707] = true, [13708] = true, [13709] = true, [13710] = true, [13711] = true}
+local allianceTournamentMarkerQuests = {
+    [13684] = true,
+    [13685] = true,
+    [13688] = true,
+    [13689] = true,
+    [13690] = true,
+    [13593] = true,
+    [13703] = true,
+    [13704] = true,
+    [13705] = true,
+    [13706] = true
+}
+local hordeTournamentMarkerQuests = {
+    [13691] = true,
+    [13693] = true,
+    [13694] = true,
+    [13695] = true,
+    [13696] = true,
+    [13707] = true,
+    [13708] = true,
+    [13709] = true,
+    [13710] = true,
+    [13711] = true
+}
 
 ---@param questId number
 function QuestieQuest:AcceptQuest(questId)
@@ -418,7 +450,8 @@ function QuestieQuest:AcceptQuest(questId)
         local complete = QuestieDB.IsComplete(questId)
         -- If any of these flags exsist then this quest has already once been accepted and is probobly in a failed state
         if (quest.WasComplete or quest.isComplete or complete == 0 or complete == -1) and (QuestiePlayer.currentQuestlog[questId]) then
-            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Accepted Quest:", questId, " Warning: This quest was once accepted and needs to be reset.")
+            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Accepted Quest:", questId,
+                " Warning: This quest was once accepted and needs to be reset.")
 
             -- Reset quest log
             QuestiePlayer.currentQuestlog[questId] = nil
@@ -474,13 +507,14 @@ function QuestieQuest:AcceptQuest(questId)
                 end
             )
         else
-            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Accepted Quest:", questId, " Warning: Quest already exists, not adding")
+            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Accepted Quest:", questId,
+                " Warning: Quest already exists, not adding")
         end
     end
 end
 
-local allianceChampionMarkerQuests = {[13699] = true, [13713] = true, [13723] = true, [13724] = true, [13725] = true}
-local hordeChampionMarkerQuests = {[13726] = true, [13727] = true, [13728] = true, [13729] = true, [13731] = true}
+local allianceChampionMarkerQuests = { [13699] = true, [13713] = true, [13723] = true, [13724] = true, [13725] = true }
+local hordeChampionMarkerQuests = { [13726] = true, [13727] = true, [13728] = true, [13729] = true, [13731] = true }
 
 ---@param questId number
 function QuestieQuest:CompleteQuest(questId)
@@ -500,16 +534,20 @@ function QuestieQuest:CompleteQuest(questId)
     if QuestieCompat.Is335 then
         QuestieCompat.SetQuestComplete(questId)
     else
-        Questie.db.char.complete[questId] = (not QuestieDB.IsRepeatable(questId)) or QuestieDB.IsDailyQuest(questId) or QuestieDB.IsWeeklyQuest(questId);
+        Questie.db.char.complete[questId] = (not QuestieDB.IsRepeatable(questId)) or QuestieDB.IsDailyQuest(questId) or
+            QuestieDB.IsWeeklyQuest(questId);
     end
 
     if allianceChampionMarkerQuests[questId] then
         Questie.db.char.complete[13700] = true -- Alliance Champion Marker
-        Questie.db.char.complete[13686] = nil -- Alliance Tournament Eligibility Marker
+        Questie.db.char.complete[13686] = nil  -- Alliance Tournament Eligibility Marker
     elseif hordeChampionMarkerQuests[questId] then
         Questie.db.char.complete[13701] = true -- Horde Champion Marker
-        Questie.db.char.complete[13687] = nil -- Horde Tournament Eligibility Marker
+        Questie.db.char.complete[13687] = nil  -- Horde Tournament Eligibility Marker
     end
+
+    -- Unload quest frames BEFORE recalculating available quests
+    -- This prevents AvailableQuests from seeing existing frames and keeping them
     QuestieMap:UnloadQuestFrames(questId)
 
     if (QuestieMap.questIdFrames[questId]) then
@@ -522,8 +560,20 @@ function QuestieQuest:CompleteQuest(questId)
         QuestieTracker:Update()
     end)
 
-    -- TODO: Should this be done first? Because CalculateAndDrawAll looks at QuestieMap.questIdFrames[QuestId] to add available
+    -- Clear from available quests cache before recalculating
+    AvailableQuests.MarkQuestComplete(questId)
+
+    -- Recalculate available quests after cleanup
+    -- AvailableQuests handles combat deferral internally
     AvailableQuests.CalculateAndDrawAll()
+
+    -- Double-check with slight delay to catch any stragglers
+    -- This handles edge cases where icons might persist due to timing
+    C_Timer.After(0.5, function()
+        if QuestieCompat.IsQuestFlaggedCompleted(questId) then
+            QuestieMap:UnloadQuestFrames(questId)
+        end
+    end)
 
     Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Completed Quest:", questId)
 end
@@ -582,9 +632,22 @@ function QuestieQuest:UpdateQuest(questId)
     ---@type Quest
     local quest = QuestieDB.GetQuest(questId)
 
+    if (not quest) then
+        Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieQuest:UpdateQuest] Quest not found in DB:", questId,
+            "Attempting to fetch from game...")
+        quest = QuestieDB.GetQuestFromGame(questId)
+
+        if (not quest) then
+            Questie:Debug(Questie.DEBUG_CRITICAL,
+                "[QuestieQuest:UpdateQuest] FAILED to create placeholder from game for:", questId)
+            return
+        end
+    end
+
     local sourceItemId = (quest and tonumber(quest.sourceItemId)) or 0
 
     if quest and (not Questie.db.char.complete[questId]) then
+        Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:UpdateQuest] Processing Incomplete Quest:", questId)
         QuestieQuest:PopulateQuestLogInfo(quest)
 
         if QuestieQuest:ShouldShowQuestNotes(questId) then
@@ -597,13 +660,19 @@ function QuestieQuest:UpdateQuest(questId)
 
         Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:UpdateQuest] QuestDB:IsComplete() flag is: " .. isComplete)
 
-        if isComplete == 1 then
+        if isComplete == 1 and quest.Finisher then
             -- Quest is complete
             Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:UpdateQuest] Quest is: Complete!")
 
             QuestieMap:UnloadQuestFrames(questId)
             QuestieQuest:AddFinisher(quest)
             quest.WasComplete = true
+        elseif isComplete == 1 and (not quest.Finisher) then
+            -- Quest is complete but we don't know the finisher.
+            Questie:Debug(Questie.DEBUG_CRITICAL,
+                "[QuestieQuest:UpdateQuest] Quest is: Complete but no Finisher known. Hiding objectives to avoid confusion.")
+            -- QuestieQuest:PopulateObjectiveNotes(quest) -- We do NOT want to show objectives if the quest is complete
+            QuestieMap:UnloadQuestFrames(questId)
         elseif isComplete == -1 then
             -- Failed quests should be shown as available again
             Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:UpdateQuest] Quest has: Failed!")
@@ -621,7 +690,8 @@ function QuestieQuest:UpdateQuest(questId)
             -- The "or" check looks for a sourceItemId then checks to see if it's NOT in the players bag.
             -- Player destroyed quest items? Or some other quest mechanic removed the needed quest item.
             if quest and (quest.WasComplete or (sourceItemId > 0 and QuestieQuest:CheckQuestSourceItem(questId) == false)) then
-                Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:UpdateQuest] Quest was once complete or Quest Item(s) were removed. Resetting quest.")
+                Questie:Debug(Questie.DEBUG_DEVELOP,
+                    "[QuestieQuest:UpdateQuest] Quest was once complete or Quest Item(s) were removed. Resetting quest.")
 
                 -- Reset quest objectives
                 quest.Objectives = {}
@@ -658,19 +728,27 @@ function QuestieQuest:UpdateQuest(questId)
                     end
 
                     if numCompleteObjectives == #quest.Objectives then
-                        Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:UpdateQuest] All Quest Objective(s) are Complete! Manually setting quest to Complete!")
+                        Questie:Debug(Questie.DEBUG_DEVELOP,
+                            "[QuestieQuest:UpdateQuest] All Quest Objective(s) are Complete! Manually setting quest to Complete!")
                         QuestieMap:UnloadQuestFrames(questId)
                         QuestieQuest:AddFinisher(quest)
                         quest.WasComplete = true
                         quest.isComplete = true
                     else
-                        Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:UpdateQuest] Quest Objective Status is: " .. numCompleteObjectives .. ", out of: " .. #quest.Objectives .. ". No updates required.")
+                        Questie:Debug(Questie.DEBUG_DEVELOP,
+                            "[QuestieQuest:UpdateQuest] Quest Objective Status is: " ..
+                            numCompleteObjectives .. ", out of: " .. #quest.Objectives .. ". No updates required.")
                     end
                 end
             end
         end
 
         Questie:SendMessage("QC_ID_BROADCAST_QUEST_UPDATE", questId)
+    else
+        -- Quest is marked as complete in character database
+        -- Remove all quest icons (available, objectives, etc.)
+        QuestieMap:UnloadQuestFrames(questId)
+        QuestieTooltips:RemoveQuest(questId)
     end
 end
 
@@ -697,7 +775,9 @@ function QuestieQuest:GetAllQuestIds()
         if not quest then
             if not Questie._sessionWarnings[questId] then
                 if not Questie.IsSoD then
-                    Questie:Error(l10n("The quest %s is missing from Questie's database. Please report this on GitHub or Discord!", tostring(questId)))
+                    Questie:Error(l10n(
+                        "The quest %s is missing from Questie's database. Please report this on GitHub or Discord!",
+                        tostring(questId)))
                 end
                 Questie._sessionWarnings[questId] = true
             end
@@ -712,17 +792,11 @@ function QuestieQuest:GetAllQuestIds()
             if complete == -1 then
                 QuestieQuest:UpdateQuest(questId)
             else
-                QuestieQuest:CheckQuestSourceItem(questId, true)
-                QuestieQuest:PopulateQuestLogInfo(quest)
-
-                if QuestieQuest:ShouldShowQuestNotes(questId) then
-                    QuestieQuest:PopulateObjectiveNotes(quest)
-                else
-                    QuestieTooltips:RemoveQuest(questId)
-                end
+                QuestieQuest:UpdateQuest(questId)
             end
 
-            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Adding the quest", questId, QuestiePlayer.currentQuestlog[questId])
+            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Adding the quest", questId,
+                QuestiePlayer.currentQuestlog[questId])
         end
     end
 
@@ -730,7 +804,6 @@ function QuestieQuest:GetAllQuestIds()
         QuestieTracker:Update()
     end)
 end
-
 
 -- This checks and manually adds quest item tooltips for sourceItems
 local function _AddSourceItemObjective(quest)
@@ -747,7 +820,8 @@ local function _AddSourceItemObjective(quest)
         for _, itemObjectiveIndex in pairs(itemObjectives) do
             for _, itemObjectiveId in pairs(itemObjectiveIndex) do
                 if itemObjectiveId == sourceItemId then
-                    Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest:_AddSourceItemObjective] This item is already part of a quest objective.")
+                    Questie:Debug(Questie.DEBUG_INFO,
+                        "[QuestieQuest:_AddSourceItemObjective] This item is already part of a quest objective.")
                     return
                 end
             end
@@ -823,7 +897,8 @@ local function _AddRequiredSourceItemObjective(quest)
             for _, itemObjectiveIndex in pairs(itemObjectives) do
                 for _, itemObjectiveId in pairs(itemObjectiveIndex) do
                     if itemObjectiveId == requiredSourceItemId or quest.sourceItemId == requiredSourceItemId then
-                        Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest:_AddRequiredSourceItemObjective] This item is already part of a quest objective.")
+                        Questie:Debug(Questie.DEBUG_INFO,
+                            "[QuestieQuest:_AddRequiredSourceItemObjective] This item is already part of a quest objective.")
                         alreadyInObjectives = true
                         break
                     end
@@ -837,7 +912,8 @@ local function _AddRequiredSourceItemObjective(quest)
         if not alreadyInObjectives then
             local itemName = QuestieDB.QueryItemSingle(requiredSourceItemId, "name")
             if itemName then
-                Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest:_AddRequiredSourceItemObjective] Adding Source Item Id for:", requiredSourceItemId)
+                Questie:Debug(Questie.DEBUG_INFO,
+                    "[QuestieQuest:_AddRequiredSourceItemObjective] Adding Source Item Id for:", requiredSourceItemId)
 
                 local fakeObjective = {
                     Id = quest.Id,
@@ -866,7 +942,9 @@ function QuestieQuest:GetAllQuestIdsNoObjectives()
         if not quest then
             if not Questie._sessionWarnings[questId] then
                 if not Questie.IsSoD then
-                    Questie:Error(l10n("The quest %s is missing from Questie's database. Please report this on GitHub or Discord!", tostring(questId)))
+                    Questie:Error(l10n(
+                        "The quest %s is missing from Questie's database. Please report this on GitHub or Discord!",
+                        tostring(questId)))
                 end
                 Questie._sessionWarnings[questId] = true
             end
@@ -878,11 +956,11 @@ function QuestieQuest:GetAllQuestIdsNoObjectives()
             _AddSourceItemObjective(quest)
             _AddRequiredSourceItemObjective(quest)
 
-            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Adding the quest", questId, QuestiePlayer.currentQuestlog[questId])
+            Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] Adding the quest", questId,
+                QuestiePlayer.currentQuestlog[questId])
         end
     end
 end
-
 
 -- iterate all notes, update / remove as needed
 ---@param quest Quest
@@ -893,17 +971,22 @@ function QuestieQuest:UpdateObjectiveNotes(quest)
 
     Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest] UpdateObjectiveNotes:", quest.Id)
     for objectiveIndex, objective in pairs(quest.Objectives) do
-        local result, err = xpcall(QuestieQuest.PopulateObjective, ERR_FUNCTION, QuestieQuest, quest, objectiveIndex, objective, false)
+        local result, err = xpcall(QuestieQuest.PopulateObjective, ERR_FUNCTION, QuestieQuest, quest, objectiveIndex,
+            objective, false)
         if (not result) then
-            Questie:Debug(Questie.DEBUG_ELEVATED, "[QuestieQuest] There was an error populating objectives for", quest.name, quest.Id, objectiveIndex, err)
+            Questie:Debug(Questie.DEBUG_ELEVATED, "[QuestieQuest] There was an error populating objectives for",
+                quest.name, quest.Id, objectiveIndex, err)
         end
     end
 
     if next(quest.SpecialObjectives) then
         for _, objective in pairs(quest.SpecialObjectives) do
-            local result, err = xpcall(QuestieQuest.PopulateObjective, ERR_FUNCTION, QuestieQuest, quest, 0, objective, true)
+            local result, err = xpcall(QuestieQuest.PopulateObjective, ERR_FUNCTION, QuestieQuest, quest, 0, objective,
+                true)
             if not result then
-                Questie:Error("[QuestieQuest]: [SpecialObjectives] " .. l10n("There was an error populating objectives for %s %s %s %s", quest.name or "No quest name", quest.Id or "No quest id", 0 or "No objective", err or "No error"));
+                Questie:Error("[QuestieQuest]: [SpecialObjectives] " ..
+                    l10n("There was an error populating objectives for %s %s %s %s", quest.name or "No quest name",
+                        quest.Id or "No quest id", 0 or "No objective", err or "No error"));
             end
         end
     end
@@ -983,7 +1066,8 @@ function QuestieQuest:AddFinisher(quest)
                 finisher = QuestieDB:GetObject(quest.Finisher.Id)
                 key = "o_" .. quest.Finisher.Id
             else
-                Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieQuest] Unhandled finisher type:", quest.Finisher.Type, questId, quest.name)
+                Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieQuest] Unhandled finisher type:", quest.Finisher.Type,
+                    questId, quest.name)
             end
         else
             Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieQuest] Quest has no finisher:", questId, quest.name)
@@ -1001,7 +1085,8 @@ function QuestieQuest:AddFinisher(quest)
                     for ttline = 1, #QuestieTooltips:GetTooltip(key) do
                         for index, line in pairs(QuestieTooltips:GetTooltip(key)) do
                             if (ttline == index) then
-                                Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest] AddFinisher - Removing duplicate Quest Title!")
+                                Questie:Debug(Questie.DEBUG_DEVELOP,
+                                    "[QuestieQuest] AddFinisher - Removing duplicate Quest Title!")
 
                                 -- Remove duplicate Quest Title
                                 QuestieTooltips.lookupByKey[key][tostring(questId) .. " " .. finisher.name] = nil
@@ -1018,7 +1103,8 @@ function QuestieQuest:AddFinisher(quest)
                                     end
 
                                     if objIndex then
-                                        Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest] AddFinisher - Removing Special Objective!")
+                                        Questie:Debug(Questie.DEBUG_DEVELOP,
+                                            "[QuestieQuest] AddFinisher - Removing Special Objective!")
 
                                         -- Remove Special Objective Text
                                         QuestieTooltips.lookupByKey[key][tostring(questId) .. " " .. objIndex] = nil
@@ -1072,7 +1158,8 @@ function QuestieQuest:AddFinisher(quest)
                             local x = coords[1];
                             local y = coords[2];
 
-                            Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest] Adding world icon as finisher:", finisherZone, x, y)
+                            Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest] Adding world icon as finisher:",
+                                finisherZone, x, y)
                             finisherIcons[finisherZone] = QuestieMap:DrawWorldIcon(data, finisherZone, x, y)
 
                             if not finisherLocs[finisherZone] then
@@ -1106,7 +1193,8 @@ function QuestieQuest:AddFinisher(quest)
                                 data.Icon = Questie.ICON_TYPE_REPEATABLE_COMPLETE
                             end
 
-                            finisherIcons[zone] = QuestieMap:DrawWorldIcon(data, zone, waypoints[1][1][1], waypoints[1][1][2])
+                            finisherIcons[zone] = QuestieMap:DrawWorldIcon(data, zone, waypoints[1][1][1],
+                                waypoints[1][1][2])
                             finisherLocs[zone] = { waypoints[1][1][1], waypoints[1][1][2] }
                         end
 
@@ -1115,7 +1203,8 @@ function QuestieQuest:AddFinisher(quest)
                 end
             end
         else
-            Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieQuest] finisher or finisher.spawns == nil for questId", questId)
+            Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieQuest] finisher or finisher.spawns == nil for questId",
+                questId)
         end
     end
 end
@@ -1134,10 +1223,31 @@ function QuestieQuest:PopulateObjective(quest, objectiveIndex, objective, blockI
 
     objective:Update()
     local completed = objective.Completed
-    local objectiveData = quest.ObjectiveData[objective.Index] or objective -- the reason for "or objective" is to handle "SpecialObjectives" aka non-listed objectives (demonic runestones for closing the portal)
+    local objectiveData = quest.ObjectiveData[objective.Index] or
+        objective -- the reason for "or objective" is to handle "SpecialObjectives" aka non-listed objectives (demonic runestones for closing the portal)
 
     if (not objective.spawnList or (not next(objective.spawnList))) and _QuestieQuest.objectiveSpawnListCallTable[objectiveData.Type] then
-        objective.spawnList = _QuestieQuest.objectiveSpawnListCallTable[objectiveData.Type](objective.Id, objective, objectiveData);
+        objective.spawnList = _QuestieQuest.objectiveSpawnListCallTable[objectiveData.Type](objective.Id, objective,
+            objectiveData);
+    end
+
+    -- Fix for stuck icons: If quest is complete, hide "Kill/Loot" objectives that aren't marked complete.
+    if (not completed) and quest.isComplete then
+        local keepObjective = false
+        if objective.spawnList then
+            for _, spawn in pairs(objective.spawnList) do
+                -- Check for Talk, Interact, Complete.
+                if spawn.Icon == Questie.ICON_TYPE_TALK or spawn.Icon == Questie.ICON_TYPE_COMPLETE or spawn.Icon == Questie.ICON_TYPE_INTERACT or spawn.Icon == Questie.ICON_TYPE_PVPQUEST_COMPLETE or spawn.Icon == Questie.ICON_TYPE_EVENTQUEST_COMPLETE then
+                    keepObjective = true
+                    break
+                end
+            end
+        end
+
+        if not keepObjective then
+            _UnloadAlreadySpawnedIcons(objective)
+            return
+        end
     end
 
     -- Tooltips should always show.
@@ -1203,7 +1313,9 @@ _RegisterObjectiveTooltips = function(objective, questId, blockItemTooltips)
             objective.hasRegisteredTooltips = true
         end
     else
-        Questie:Error("[QuestieQuest]: [Tooltips] " .. l10n("There was an error populating objectives for %s %s %s %s", objective.Description or "No objective text", questId or "No quest id", 0 or "No objective", "No error"));
+        Questie:Error("[QuestieQuest]: [Tooltips] " ..
+            l10n("There was an error populating objectives for %s %s %s %s", objective.Description or "No objective text",
+                questId or "No quest id", 0 or "No objective", "No error"));
     end
 
     if (not objective.registeredItemTooltips) and objective.Type == "item" and (not blockItemTooltips) and objective.Id then
@@ -1428,8 +1540,9 @@ _DrawObjectiveWaypoints = function(objective, icon, iconPerZone)
             for zone, waypoints in pairs(spawnData.Waypoints) do
                 local firstWaypoint = waypoints[1][1]
 
-                if (not iconPerZone[zone]) and icon and firstWaypoint[1] ~= -1 and firstWaypoint[2] ~= -1 then              -- spawn an icon in this zone for the mob
-                    local iconMap, iconMini = QuestieMap:DrawWorldIcon(icon.data, zone, firstWaypoint[1], firstWaypoint[2]) -- clustering code takes care of duplicates as long as min-dist is more than 0
+                if (not iconPerZone[zone]) and icon and firstWaypoint[1] ~= -1 and firstWaypoint[2] ~= -1 then -- spawn an icon in this zone for the mob
+                    local iconMap, iconMini = QuestieMap:DrawWorldIcon(icon.data, zone, firstWaypoint[1],
+                        firstWaypoint[2])                                                                      -- clustering code takes care of duplicates as long as min-dist is more than 0
 
                     if iconMap and iconMini then
                         iconPerZone[zone] = { iconMap, firstWaypoint[1], firstWaypoint[2] }
@@ -1456,8 +1569,11 @@ function QuestieQuest:PopulateObjectiveNotes(quest) -- this should be renamed to
         return
     end
 
-    if QuestieDB.IsComplete(quest.Id) == 1 then
-        Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest:PopulateObjectiveNotes] Quest Complete! Adding Finisher for:", quest.Id)
+    -- Check if the quest is complete AND has a finisher.
+    -- If we don't check for a finisher, UpdateQuest will call PopulateObjectiveNotes again, causing a stack overflow.
+    if QuestieDB.IsComplete(quest.Id) == 1 and quest.Finisher then
+        Questie:Debug(Questie.DEBUG_INFO, "[QuestieQuest:PopulateObjectiveNotes] Quest Complete! Adding Finisher for:",
+            quest.Id)
 
         QuestieQuest:UpdateQuest(quest.Id)
         _AddSourceItemObjective(quest)
@@ -1465,6 +1581,10 @@ function QuestieQuest:PopulateObjectiveNotes(quest) -- this should be renamed to
         _AddSpellItemObjective(quest)
 
         return
+    elseif QuestieDB.IsComplete(quest.Id) == 1 then
+        Questie:Debug(Questie.DEBUG_INFO,
+            "[QuestieQuest:PopulateObjectiveNotes] Quest Complete but No Finisher! Populating objectives instead for:",
+            quest.Id)
     end
 
     if (not quest.Color) then
@@ -1500,10 +1620,101 @@ function QuestieQuest:PopulateQuestLogInfo(quest)
 
     local questObjectives = QuestieQuest:GetAllLeaderBoardDetails(quest.Id) or {} -- DO NOT MODIFY THE RETURNED TABLE
 
+    Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:PopulateQuestLogInfo] Objective Count:", #questObjectives,
+        "for Quest:", quest.Id)
+
     for objectiveIndex, objective in pairs(questObjectives) do
         if objective.type and string.len(objective.type) > 1 then
             if (not quest.ObjectiveData) or (not quest.ObjectiveData[objectiveIndex]) then
-                Questie:Error(l10n("Missing objective data for quest "), quest.Id, " ", objective.text)
+                local foundId = nil
+                local foundType = objective.type
+
+                -- Auto-Fix: Try to find the ID by name
+                if objective.text and string.len(objective.text) > 0 then
+                    local function CleanObjectiveText(text)
+                        local clean = text or ""
+                        clean = string.gsub(clean, ": %d+/%d+$", "") -- remove count " : 0/5"
+                        clean = string.gsub(clean, " slain$", "")    -- remove " slain"
+                        clean = string.gsub(clean, " destroyed$", "")
+                        clean = string.gsub(clean, " collected$", "")
+                        -- Trim whitespace
+                        clean = string.gsub(clean, "^%s*(.-)%s*$", "%1")
+                        return clean
+                    end
+
+                    -- Helper to find ID by name
+                    local function FindIdByName(compType, searchName)
+                        local cleanName = CleanObjectiveText(searchName)
+                        -- Try exact match first on cleaned name
+                        if compType == "monster" then
+                            if QuestieDB.npcData then
+                                for id, data in pairs(QuestieDB.npcData) do
+                                    if data[1] and data[1] == cleanName then return id end
+                                end
+                            end
+                            if QuestieDB.npcDataOverrides then
+                                for id, data in pairs(QuestieDB.npcDataOverrides) do
+                                    if data[1] and data[1] == cleanName then return id end
+                                end
+                            end
+                        elseif compType == "item" then
+                            if QuestieDB.itemData then
+                                for id, data in pairs(QuestieDB.itemData) do
+                                    if data[1] and data[1] == cleanName then return id end
+                                end
+                            end
+                            if QuestieDB.itemDataOverrides then
+                                for id, data in pairs(QuestieDB.itemDataOverrides) do
+                                    if data[1] and data[1] == cleanName then return id end
+                                end
+                            end
+                        end
+                        return nil
+                    end
+
+                    foundId = FindIdByName(objective.type, objective.text)
+                end
+
+                if foundId then
+                    if not quest.ObjectiveData then quest.ObjectiveData = {} end
+                    quest.ObjectiveData[objectiveIndex] = { Id = foundId, Type = foundType }
+                    Questie:Print(l10n(
+                        "Questie: [Self-Learned] Found database match for missing objective '%s' (ID: %s).",
+                        objective.text,
+                        foundId))
+                else
+                    Questie:Debug(Questie.DEBUG_CRITICAL,
+                        "[QuestieQuest] Missing objective data for quest " .. quest.Id .. " " .. tostring(objective.text))
+                    -- Record it
+                    local CustomDataLoader = QuestieLoader:ImportModule("CustomDataLoader")
+                    if CustomDataLoader then
+                        local server, realm = CustomDataLoader:GetServerInfo()
+                        if not Questie.db.global.serverData then Questie.db.global.serverData = {} end
+                        if not Questie.db.global.serverData[server] then Questie.db.global.serverData[server] = {} end
+                        if not Questie.db.global.serverData[server][realm] then Questie.db.global.serverData[server][realm] = { questData = {}, missingData = {} } end
+                        local realmDB = Questie.db.global.serverData[server][realm]
+                        if not realmDB.missingData then realmDB.missingData = {} end
+
+                        if not realmDB.missingData[quest.Id] then realmDB.missingData[quest.Id] = {} end
+
+                        -- Store it in a format like { Text = "Objective Text", Type = "monster" }
+                        -- This is effectively a "Todo" list for manual fixing, or potential auto-import later
+                        table.insert(realmDB.missingData[quest.Id],
+                            { objectiveIndex = objectiveIndex, text = objective.text, type = objective.type })
+
+                        Questie:Print(l10n("Questie: [Recorded] Missing objective data for quest %s (%s) to %s/%s.",
+                            quest.Id, objective.text, server, realm))
+                    else
+                        -- Fallback
+                        if not Questie.db.global.missingObjectives then Questie.db.global.missingObjectives = {} end
+                        if not Questie.db.global.missingObjectives[quest.Id] then Questie.db.global.missingObjectives[quest.Id] = {} end
+                        table.insert(Questie.db.global.missingObjectives[quest.Id],
+                            { text = objective.text, type = objective.type })
+                        Questie:Print(l10n(
+                            "Questie: [Recorded] Missing objective data for quest %s (%s). It will be added in a future update.",
+                            quest.Id, objective.text))
+                    end
+                end
             else
                 if not quest.Objectives[objectiveIndex] then
                     quest.Objectives[objectiveIndex] = {
@@ -1525,7 +1736,9 @@ function QuestieQuest:PopulateQuestLogInfo(quest)
         end
 
         if (not quest.Objectives[objectiveIndex]) or (not quest.Objectives[objectiveIndex].Id) then
-            Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest:PopulateQuestLogInfo] Error finding entry ID for objective", objectiveIndex, objective.type, objective.text, "of questId:", quest.Id)
+            Questie:Debug(Questie.DEBUG_DEVELOP,
+                "[QuestieQuest:PopulateQuestLogInfo] Error finding entry ID for objective", objectiveIndex,
+                objective.type, objective.text, "of questId:", quest.Id)
         end
     end
 
@@ -1585,7 +1798,8 @@ function _QuestieQuest.ObjectiveUpdate(self)
             self.Description = obj.text
             self.Collected = tonumber(numFulfilled);
             self.Needed = tonumber(numRequired);
-            self.Completed = (self.Needed == self.Collected and self.Needed > 0) or (finished and (self.Needed == 0 or (not self.Needed))) -- some objectives get removed on PLAYER_LOGIN because isComplete is set to true at random????
+            self.Completed = (self.Needed == self.Collected and self.Needed > 0) or
+                (finished and (self.Needed == 0 or (not self.Needed))) -- some objectives get removed on PLAYER_LOGIN because isComplete is set to true at random????
             -- Mark objective updated
             self.isUpdated = true
         end

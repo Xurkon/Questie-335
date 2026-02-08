@@ -2285,7 +2285,40 @@ function QuestieTracker:AQW_Insert(index, expire)
             if Questie.IsSoD then
                 QuestieDebugOffer.QuestTracking(questId)
             else
-                Questie:Error("Missing quest " .. tostring(questId) .. "," .. tostring(expire) .. " during tracker update")
+                local QuestieLearner = QuestieLoader:ImportModule("QuestieLearner")
+                if QuestieLearner and QuestieLearner:IsEnabled() then
+                    local index = nil
+                    for i=1, GetNumQuestLogEntries() do
+                         local link = GetQuestLink(i)
+                         if link then
+                             local id = tonumber(string.match(link, "quest:(%d+)"))
+                             if id == questId then
+                                 index = i
+                                 break
+                             end
+                         end
+                    end
+                    
+                    if index then
+                        QuestieLearner:OnQuestAccepted(index, questId)
+                        QuestieLearner:InjectLearnedData()
+                        quest = QuestieDB.GetQuest(questId)
+                    end
+                end
+
+                if quest then
+                     -- Retry logic with learned quest
+                    local zoneId = quest.zoneOrSort
+                    if Questie.db.char.collapsedQuests[questId] == true then
+                        Questie.db.char.collapsedQuests[questId] = nil
+                    end
+        
+                    if Questie.db.char.collapsedZones[zoneId] == true then
+                        Questie.db.char.collapsedZones[zoneId] = nil
+                    end
+                else
+                    Questie:Error("Missing quest " .. tostring(questId) .. " during tracker update")
+                end
             end
         end
     end

@@ -63,6 +63,7 @@ function QuestieSlash.HandleCommands(input)
         print(Questie:Colorize("/questie flex - " .. l10n("Flex the amount of quests you have completed so far"), "yellow"));
         print(Questie:Colorize("/questie doable [questID] - " .. l10n("Prints whether you are eligibile to do a quest"), "yellow"));
         print(Questie:Colorize("/questie version - " .. l10n("Prints Questie and client version info"), "yellow"));
+        print(Questie:Colorize("/questie learn [toggle/stats/clear/export] - " .. l10n("Self-learning database: toggle on/off, view stats, clear data, or export"), "yellow"));
         return;
     end
 
@@ -183,6 +184,37 @@ function QuestieSlash.HandleCommands(input)
 
         Questie:Print("[Eligibility] " .. tostring(QuestieDB.IsDoableVerbose(tonumber(subCommand), false, true, false)))
 
+        return
+    end
+
+    -- /questie learn [toggle/stats/clear/export]
+    if mainCommand == "learn" then
+        local QuestieLearner = QuestieLoader:ImportModule("QuestieLearner")
+        if not QuestieLearner then
+            Questie:Print("QuestieLearner module not loaded")
+            return
+        end
+
+        if subCommand == "toggle" or not subCommand then
+            local settings = QuestieLearner:GetSettings()
+            settings.enabled = not settings.enabled
+            Questie:Print("Learning " .. (settings.enabled and "|cff00ff00enabled|r" or "|cffff0000disabled|r"))
+        elseif subCommand == "stats" then
+            local npcCount, questCount, itemCount, objectCount = QuestieLearner:GetStats()
+            Questie:Print("Learned data: " .. npcCount .. " NPCs, " .. questCount .. " quests, " .. itemCount .. " items, " .. objectCount .. " objects")
+        elseif subCommand == "clear" then
+            QuestieLearner:ClearAllData()
+        elseif subCommand == "export" then
+            local exportText = QuestieLearner:ExportData()
+            if exportText and #exportText > 0 then
+                Questie:Print("Export data printed to chat. Copy from Lua errors or use /dump")
+                print(exportText)
+            else
+                Questie:Print("No learned data to export")
+            end
+        else
+            Questie:Print("Usage: /questie learn [toggle/stats/clear/export]")
+        end
         return
     end
 

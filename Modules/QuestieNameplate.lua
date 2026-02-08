@@ -81,7 +81,6 @@ function QuestieNameplate:UpdateNameplate()
     Questie:Debug(Questie.DEBUG_SPAM, "[QuestieNameplate:UpdateNameplate]")
 
     for guid, token in pairs(activeGUIDs) do
-
         local unitName, _ = UnitName(token)
         local _, _, _, _, _, npcId, _ = strsplit("-", guid)
 
@@ -181,9 +180,9 @@ function QuestieNameplate:RedrawFrameIcon()
     local iconScale = Questie.db.profile.nameplateTargetFrameScale
     activeTargetFrame:SetWidth(16 * iconScale)
     activeTargetFrame:SetHeight(16 * iconScale)
-    activeTargetFrame:SetPoint("RIGHT", Questie.db.profile.nameplateTargetFrameX, Questie.db.profile.nameplateTargetFrameY)
+    activeTargetFrame:SetPoint("RIGHT", Questie.db.profile.nameplateTargetFrameX,
+        Questie.db.profile.nameplateTargetFrameY)
 end
-
 
 ---@param guid string
 function _QuestieNameplate.GetFrame(guid)
@@ -192,6 +191,11 @@ function _QuestieNameplate.GetFrame(guid)
     end
 
     local parent = QuestieCompat.Is335 and guid or C_NamePlate.GetNamePlateForUnit(activeGUIDs[guid])
+
+    -- Validation: In 3.3.5, parent might be a GUID string. SetParent errors if the string doesn't name a region.
+    if type(parent) == "string" and not _G[parent] then
+        parent = nil
+    end
 
     local frame = tremove(npUnusedFrames)
 
@@ -291,7 +295,7 @@ function _QuestieNameplate.GetValidIcon(tooltips) -- helper function to get the 
                     return Questie.icons["event"]
                 elseif iconType == Questie.ICON_TYPE_TALK then
                     return Questie.icons["talk"]
-                --? icon types below here are never reached or just not used on nameplates ?
+                    --? icon types below here are never reached or just not used on nameplates ?
                 elseif iconType == Questie.ICON_TYPE_AVAILABLE or iconType == Questie.ICON_TYPE_AVAILABLE_GRAY then
                     return Questie.icons["available"]
                 elseif iconType == Questie.ICON_TYPE_REPEATABLE then

@@ -40,15 +40,31 @@ local dungeons = ZoneDB:GetDungeons()
 
 local _CalculateAvailableQuests, _DrawChildQuests, _AddStarter, _DrawAvailableQuest, _GetQuestIcon, _GetIconScaleForAvailable, _HasProperDistanceToAlreadyAddedSpawns
 
+---@type QuestieCombatQueue
+local QuestieCombatQueue = QuestieLoader:ImportModule("QuestieCombatQueue")
+
 ---@param callback function | nil
 function AvailableQuests.CalculateAndDrawAll(callback)
     Questie:Debug(Questie.DEBUG_INFO, "[AvailableQuests.CalculateAndDrawAll]")
+
+    if InCombatLockdown() then
+        Questie:Debug(Questie.DEBUG_INFO, "[AvailableQuests] Deferring CalculateAndDrawAll until after combat")
+        QuestieCombatQueue:Queue(function()
+            AvailableQuests.CalculateAndDrawAll(callback)
+        end)
+        return
+    end
 
     --? Cancel the previously running timer to not have multiple running at the same time
     if timer then
         timer:Cancel()
     end
-    timer = ThreadLib.Thread(_CalculateAvailableQuests, 0, "Error in AvailableQuests.CalculateAndDrawAll", callback)
+    timer = ThreadLib.Thread(_CalculateAvailableQuests, 0, "Error in AvailableQuests.CalculateAndDrawAll", function()
+        if callback then
+            callback()
+        end
+        AvailableQuests.StartPeriodicCleanup()
+    end)
 end
 
 --Draw a single available quest, it is used by the CalculateAndDrawAll function.
@@ -88,13 +104,34 @@ function AvailableQuests.DrawAvailableQuest(quest) -- prevent recursion
     end
 end
 
-
 function AvailableQuests.UnloadUndoable()
     for questId, _ in pairs(availableQuests) do
         if (not QuestieDB.IsDoable(questId)) then
             QuestieMap:UnloadQuestFrames(questId)
         end
     end
+end
+
+function AvailableQuests.MarkQuestComplete(questId)
+    availableQuests[questId] = nil
+end
+
+local cleanupTimer = nil
+
+function AvailableQuests.CleanupCompletedIcons()
+    for questId, _ in pairs(availableQuests) do
+        if QuestieCompat.IsQuestFlaggedCompleted(questId) then
+            QuestieMap:UnloadQuestFrames(questId)
+            availableQuests[questId] = nil
+        end
+    end
+end
+
+function AvailableQuests.StartPeriodicCleanup()
+    if cleanupTimer then
+        return
+    end
+    cleanupTimer = C_Timer.NewTicker(2, AvailableQuests.CleanupCompletedIcons)
 end
 
 _CalculateAvailableQuests = function()
@@ -136,11 +173,11 @@ _CalculateAvailableQuests = function()
     -- The order of checks is important here to bring the speed to a max
     local function _DrawQuestIfAvailable(questId)
         if (autoBlacklist[questId] or       -- Don't show autoBlacklist quests marked as such by IsDoable
-            completedQuests[questId] or     -- Don't show completed quests
-            hiddenQuests[questId] or        -- Don't show blacklisted quests
-            hidden[questId] or              -- Don't show quests hidden by the player
-            activeChildQuests[questId]      -- We already drew this quest in a previous loop iteration
-        ) then
+                completedQuests[questId] or -- Don't show completed quests
+                hiddenQuests[questId] or    -- Don't show blacklisted quests
+                hidden[questId] or          -- Don't show quests hidden by the player
+                activeChildQuests[questId]  -- We already drew this quest in a previous loop iteration
+            ) then
             return
         end
 
@@ -153,21 +190,21 @@ _CalculateAvailableQuests = function()
         end
 
         if (
-            ((not showRepeatableQuests) and QuestieDB.IsRepeatable(questId)) or     -- Don't show repeatable quests if option is disabled
-            ((not showPvPQuests) and QuestieDB.IsPvPQuest(questId)) or              -- Don't show PvP quests if option is disabled
-            ((not showDungeonQuests) and QuestieDB.IsDungeonQuest(questId)) or      -- Don't show dungeon quests if option is disabled
-            ((not showRaidQuests) and QuestieDB.IsRaidQuest(questId)) or            -- Don't show raid quests if option is disabled
-            ((not showAQWarEffortQuests) and aqWarEffortQuests[questId]) or         -- Don't show AQ War Effort quests if the option disabled
-            (Questie.IsClassic and currentIsleOfQuelDanasQuests[questId]) or        -- Don't show Isle of Quel'Danas quests for Era/HC/SoX
-            (Questie.IsSoD and QuestieDB.IsRuneAndShouldBeHidden(questId))          -- Don't show SoD Rune quests with the option disabled
-        ) then
+                ((not showRepeatableQuests) and QuestieDB.IsRepeatable(questId)) or -- Don't show repeatable quests if option is disabled
+                ((not showPvPQuests) and QuestieDB.IsPvPQuest(questId)) or          -- Don't show PvP quests if option is disabled
+                ((not showDungeonQuests) and QuestieDB.IsDungeonQuest(questId)) or  -- Don't show dungeon quests if option is disabled
+                ((not showRaidQuests) and QuestieDB.IsRaidQuest(questId)) or        -- Don't show raid quests if option is disabled
+                ((not showAQWarEffortQuests) and aqWarEffortQuests[questId]) or     -- Don't show AQ War Effort quests if the option disabled
+                (Questie.IsClassic and currentIsleOfQuelDanasQuests[questId]) or    -- Don't show Isle of Quel'Danas quests for Era/HC/SoX
+                (Questie.IsSoD and QuestieDB.IsRuneAndShouldBeHidden(questId))      -- Don't show SoD Rune quests with the option disabled
+            ) then
             return
         end
 
         if (
-            (not QuestieDB.IsLevelRequirementsFulfilled(questId, minLevel, maxLevel, playerLevel)) or
-            (not QuestieDB.IsDoable(questId, debugEnabled))
-        ) then
+                (not QuestieDB.IsLevelRequirementsFulfilled(questId, minLevel, maxLevel, playerLevel)) or
+                (not QuestieDB.IsDoable(questId, debugEnabled))
+            ) then
             --If the quests are not within level range we want to unload them
             --(This is for when people level up or change settings etc)
 
@@ -293,9 +330,9 @@ _GetQuestIcon = function(quest)
     if quest.IsRepeatable then
         return Questie.ICON_TYPE_REPEATABLE
     end
-	if QuestieLib:IsQuestTrivialScaled(quest.Id, effectiveQuestLevel) then
-		return Questie.ICON_TYPE_AVAILABLE_GRAY
-	end                            
+    if QuestieLib:IsQuestTrivialScaled(quest.Id, effectiveQuestLevel) then
+        return Questie.ICON_TYPE_AVAILABLE_GRAY
+    end
     return Questie.ICON_TYPE_AVAILABLE
 end
 

@@ -83,6 +83,8 @@ local WorldMapButton = QuestieLoader:ImportModule("WorldMapButton")
 local AvailableQuests = QuestieLoader:ImportModule("AvailableQuests")
 ---@type SeasonOfDiscovery
 local SeasonOfDiscovery = QuestieLoader:ImportModule("SeasonOfDiscovery")
+---@type QuestieLearner
+local QuestieLearner = QuestieLoader:ImportModule("QuestieLearner")
 
 --- COMPATIBILITY ---
 local WOW_PROJECT_ID = QuestieCompat.WOW_PROJECT_ID
@@ -227,6 +229,11 @@ QuestieInit.Stages[1] = function() -- run as a coroutine
 
     coYield()
     QuestieDB:Initialize()
+
+    coYield()
+    if QuestieLearner and QuestieLearner.Initialize then
+        QuestieLearner:Initialize()
+    end
 
     coYield()
     Tutorial.Initialize()

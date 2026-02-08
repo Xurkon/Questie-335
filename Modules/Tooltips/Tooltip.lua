@@ -71,7 +71,10 @@ function QuestieTooltips:RegisterQuestStartTooltip(questId, name, starterId, key
         name = name,
         starterId = starterId,
     };
-    QuestieTooltips.lookupByKey[key][tostring(questId) .. " " .. name .. " " .. starterId] = tooltip
+    -- Prevent nil concatenation error if name is nil
+    if name then
+        QuestieTooltips.lookupByKey[key][tostring(questId) .. " " .. name .. " " .. starterId] = tooltip
+    end
     tinsert(QuestieTooltips.lookupKeysByQuestId[questId], key)
 end
 
@@ -135,7 +138,8 @@ local function _FetchTooltipsForGroupMembers(key, tooltipData)
         for questId, playerList in pairs(tooltipDataExternal) do
             if (not tooltipData[questId]) then
                 tooltipData[questId] = {
-                    title = QuestieLib:GetColoredQuestName(questId, Questie.db.profile.enableTooltipsQuestLevel, true, true)
+                    title = QuestieLib:GetColoredQuestName(questId, Questie.db.profile.enableTooltipsQuestLevel, true,
+                        true)
                 }
             end
             for playerName, _ in pairs(playerList) do
@@ -157,7 +161,8 @@ local function _FetchTooltipsForGroupMembers(key, tooltipData)
         for questId, playerList in pairs(tooltipDataExternal) do
             if (not tooltipData[questId]) then
                 tooltipData[questId] = {
-                    title = QuestieLib:GetColoredQuestName(questId, Questie.db.profile.enableTooltipsQuestLevel, true, true)
+                    title = QuestieLib:GetColoredQuestName(questId, Questie.db.profile.enableTooltipsQuestLevel, true,
+                        true)
                 }
             end
             for playerName, objectives in pairs(playerList) do
@@ -169,18 +174,23 @@ local function _FetchTooltipsForGroupMembers(key, tooltipData)
                             objective = {}
                         end
 
-                        tooltipData[questId].objectivesText = _InitObjectiveTexts(tooltipData[questId].objectivesText, objectiveIndex, playerName)
+                        tooltipData[questId].objectivesText = _InitObjectiveTexts(tooltipData[questId].objectivesText,
+                            objectiveIndex, playerName)
 
                         local text;
                         local color = QuestieLib:GetRGBForObjective(objective)
 
                         if objective.required then
-                            text = "   " .. color .. tostring(objective.fulfilled) .. "/" .. tostring(objective.required) .. " " .. objective.text;
+                            text = "   " ..
+                            color ..
+                            tostring(objective.fulfilled) .. "/" .. tostring(objective.required) .. " " .. objective
+                            .text;
                         else
                             text = "   " .. color .. objective.text;
                         end
 
-                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] = text };
+                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] =
+                        text };
                     end
                 end
             end
@@ -221,7 +231,8 @@ function QuestieTooltips:GetTooltip(key)
         for k, tooltip in pairs(QuestieTooltips.lookupByKey[key]) do
             if tooltip.name then
                 if Questie.db.profile.showQuestsInNpcTooltip then
-                    local questString = QuestieLib:GetColoredQuestName(tooltip.questId, Questie.db.profile.enableTooltipsQuestLevel, true, true)
+                    local questString = QuestieLib:GetColoredQuestName(tooltip.questId,
+                        Questie.db.profile.enableTooltipsQuestLevel, true, true)
                     tinsert(tooltipLines, questString)
                 end
             else
@@ -235,26 +246,36 @@ function QuestieTooltips:GetTooltip(key)
                 local objectiveIndex = objective.Index;
                 if (not tooltipData[questId]) then
                     tooltipData[questId] = {
-                        title = QuestieLib:GetColoredQuestName(questId, Questie.db.profile.enableTooltipsQuestLevel, true, true)
+                        title = QuestieLib:GetColoredQuestName(questId, Questie.db.profile.enableTooltipsQuestLevel, true,
+                            true)
                     }
                 end
                 if not QuestiePlayer.currentQuestlog[questId] then
                     -- TODO: Is this still required?
                     QuestieTooltips.lookupByKey[key][k] = nil
                 else
-                    tooltipData[questId].objectivesText = _InitObjectiveTexts(tooltipData[questId].objectivesText, objectiveIndex, playerName)
+                    tooltipData[questId].objectivesText = _InitObjectiveTexts(tooltipData[questId].objectivesText,
+                        objectiveIndex, playerName)
                     local text;
                     local color = QuestieLib:GetRGBForObjective(objective)
 
                     if objective.Type == "spell" and objective.spawnList[tonumber(key:sub(3))].ItemId then
-                        text = "   " .. color .. tostring(QuestieDB.QueryItemSingle(objective.spawnList[tonumber(key:sub(3))].ItemId, "name"));
-                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] = text };
+                        text = "   " ..
+                        color ..
+                        tostring(QuestieDB.QueryItemSingle(objective.spawnList[tonumber(key:sub(3))].ItemId, "name"));
+                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] =
+                        text };
                     elseif objective.Needed then
-                        text = "   " .. color .. tostring(objective.Collected) .. "/" .. tostring(objective.Needed) .. " " .. tostring(objective.Description);
-                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] = text };
+                        text = "   " ..
+                        color ..
+                        tostring(objective.Collected) ..
+                        "/" .. tostring(objective.Needed) .. " " .. tostring(objective.Description);
+                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] =
+                        text };
                     else
                         text = "   " .. color .. tostring(objective.Description);
-                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] = text };
+                        tooltipData[questId].objectivesText[objectiveIndex][playerName] = { ["color"] = color, ["text"] =
+                        text };
                     end
                 end
             end
@@ -288,9 +309,11 @@ function QuestieTooltips:GetTooltip(key)
                 if objectivePlayerName == playerName and anotherPlayer then -- why did we have this case
                     local _, classFilename = UnitClass("player");
                     local _, _, _, argbHex = GetClassColor(classFilename)
-                    objectiveInfo.text = objectiveInfo.text .. " (|c" .. argbHex .. objectivePlayerName .. "|r" .. objectiveInfo.color .. ")|r"
+                    objectiveInfo.text = objectiveInfo.text ..
+                    " (|c" .. argbHex .. objectivePlayerName .. "|r" .. objectiveInfo.color .. ")|r"
                 elseif playerColor and objectivePlayerName ~= playerName then
-                    objectiveInfo.text = objectiveInfo.text .. " (" .. playerColor .. objectivePlayerName .. "|r" .. objectiveInfo.color .. ")|r" .. playerType
+                    objectiveInfo.text = objectiveInfo.text ..
+                    " (" .. playerColor .. objectivePlayerName .. "|r" .. objectiveInfo.color .. ")|r" .. playerType
                 end
                 -- We want the player to be on top.
                 if objectivePlayerName == playerName then

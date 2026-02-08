@@ -90,7 +90,8 @@ function TrackerHeaderFrame.Initialize(baseFrame)
         GameTooltip:AddLine(Questie:Colorize(l10n("Right Click") .. ": ", "gray") .. l10n("Toggle My Journey"))
         GameTooltip:AddLine(" ")
         GameTooltip:AddLine(Questie:Colorize(l10n("Left Click + Hold") .. ": ", "gray") .. l10n("Drag while Unlocked"))
-        GameTooltip:AddLine(Questie:Colorize(l10n("Ctrl + Left Click + Hold") .. ": ", "gray") .. l10n("Drag while Locked"))
+        GameTooltip:AddLine(Questie:Colorize(l10n("Ctrl + Left Click + Hold") .. ": ", "gray") ..
+        l10n("Drag while Locked"))
 
         local VoiceOver, TomTom = TrackerUtils:IsVoiceOverLoaded(), IsAddOnLoaded("TomTom")
 
@@ -99,11 +100,13 @@ function TrackerHeaderFrame.Initialize(baseFrame)
             GameTooltip:AddLine(Questie:Colorize(l10n("Questie Tracker Integrations") .. ": ", "gray"))
 
             if VoiceOver then
-                GameTooltip:AddLine(Questie:Colorize(l10n("VoiceOver") .. ": ", "white") .. l10n("Hold shift to see PlayButtons"))
+                GameTooltip:AddLine(Questie:Colorize(l10n("VoiceOver") .. ": ", "white") ..
+                l10n("Hold shift to see PlayButtons"))
             end
 
             if TomTom then
-                GameTooltip:AddLine(Questie:Colorize(l10n("TomTom") .. ": ", "white") .. l10n("Ctrl + Left Click or Right Click a Quest Title"))
+                GameTooltip:AddLine(Questie:Colorize(l10n("TomTom") .. ": ", "white") ..
+                l10n("Ctrl + Left Click or Right Click a Quest Title"))
             end
         end
 
@@ -209,30 +212,33 @@ function TrackerHeaderFrame:Update()
         headerFrame.questieIcon:SetPoint("TOPLEFT", headerFrame, "TOPLEFT", 6, 0)
         headerFrame.questieIcon:Show()
 
-        headerFrame.trackedQuests.label:SetFont(LSM30:Fetch("font", Questie.db.profile.trackerFontHeader), trackerFontSizeHeader, Questie.db.profile.trackerFontOutline)
+        headerFrame.trackedQuests.label:SetFont(LSM30:Fetch("font", Questie.db.profile.trackerFontHeader),
+            trackerFontSizeHeader, Questie.db.profile.trackerFontOutline)
 
         local maxQuestAmount = "/" .. C_QuestLog.GetMaxNumQuestsCanAccept()
         local _, activeQuests = GetNumQuestLogEntries()
 
         if Questie.db.char.isTrackerExpanded then
-            headerFrame.trackedQuests.label:SetText(l10n("Questie Tracker") .. ": " .. tostring(activeQuests) .. maxQuestAmount)
+            headerFrame.trackedQuests.label:SetText(l10n("Questie Tracker") ..
+            ": " .. tostring(activeQuests) .. maxQuestAmount)
         else
             headerFrame.trackedQuests.label:SetText(l10n("Questie Tracker") .. " +")
         end
 
         headerFrame.trackedQuests.label:SetPoint("TOPLEFT", headerFrame.questieIcon, "TOPRIGHT", 2, 0)
-        headerFrame.trackedQuests:SetWidth(headerFrame.trackedQuests.label:GetUnboundedStringWidth())
+        headerFrame.trackedQuests:SetWidth(headerFrame.trackedQuests.label:GetStringWidth())
         headerFrame.trackedQuests:SetHeight(trackerFontSizeHeader)
         headerFrame.trackedQuests:SetPoint("TOPLEFT", headerFrame.questieIcon, "TOPRIGHT", 2, 0)
         headerFrame.trackedQuests:Show()
 
-        headerFrame:SetWidth(headerFrame.trackedQuests.label:GetUnboundedStringWidth() + trackerFontSizeHeader)
+        headerFrame:SetWidth(headerFrame.trackedQuests.label:GetStringWidth() + trackerFontSizeHeader)
         headerFrame:SetHeight(trackerFontSizeHeader + 5)
         headerFrame:Show()
 
         TrackerHeaderFrame.PositionTrackerHeaderFrame(headerFrame, trackerBaseFrame)
 
-        QuestieCompat.SetResizeBounds(trackerBaseFrame, headerFrame.trackedQuests.label:GetUnboundedStringWidth(), trackerFontSizeHeader)
+        QuestieCompat.SetResizeBounds(trackerBaseFrame, headerFrame.trackedQuests.label:GetStringWidth(),
+            trackerFontSizeHeader)
     else
         headerFrame:Hide()
 
