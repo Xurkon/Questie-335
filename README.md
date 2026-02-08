@@ -1,6 +1,6 @@
 # Questie-335
 
-A fork of the WoW Classic **Questie** addon aiming to provide compatibility with **Ascension (Bronzebeard)**.
+A fork of the WoW Classic **Questie** addon aiming to provide compatibility with **Project Ebonhold**.
 
 ## Installation
 - [Download](https://github.com/3majed/Questie-335/releases) the archive.
@@ -10,10 +10,10 @@ A fork of the WoW Classic **Questie** addon aiming to provide compatibility with
 
 ## Fixes
 - **Nameplates**
-  - Skips **Ascension Nameplates** and works with other addons.
+  - Skips **Project Ebonhold Nameplates** and works with other addons.
 
 - **Tracker**
-  1. Compatible with the Ascension API and doesn't fail with auto-turn-in quests.
+  1. Compatible with the Project Ebonhold API and doesn't fail with auto-turn-in quests.
   2. No more missing header issues.
   3. Refreshes correctly when accepting, completing, or abandoning quests.
 
@@ -28,7 +28,7 @@ A fork of the WoW Classic **Questie** addon aiming to provide compatibility with
   - Fixed errors when zooming the minimap.
 
 - **World Map**
-  1. Supports Ascension `WorldMapFrame` when minimized and draws icons correctly.
+  1. Supports Project Ebonhold `WorldMapFrame` when minimized and draws icons correctly.
   2. Works with **Mapster** and **Magnify-WotLK**.
 
 - **New Content (Maps & Quests)**
@@ -38,8 +38,8 @@ A fork of the WoW Classic **Questie** addon aiming to provide compatibility with
 
 ## Features
 
-### Ascension Scaling system
-- Scaling all quest to character level like Ascension Scaling system
+### Project Ebonhold Scaling system
+- Scaling all quest to character level like Project Ebonhold Scaling system
 
 ### Show quests on map
 - Show notes for quest start points, turn in points, and objectives.
