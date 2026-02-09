@@ -40,6 +40,13 @@ A fork of the WoW Classic **Questie** addon aiming to provide compatibility with
 
 ### Project Ebonhold Scaling system
 - Scaling all quest to character level like Project Ebonhold Scaling system
+> [!WARNING]
+> This feature is intended for **Project Ebonhold** realms only. Please disable this option if you are playing on other 3.3.5 servers to avoid incorrect quest data.
+
+### Self Learning
+- Questie now includes a self-learning feature that records quest data (objectives, locations, etc.) as you play.
+- This data is saved locally to improve accuracy for quests that may be missing or incorrect in the base database.
+- Helpful for custom content or server-specific quest modifications.
 
 ### Show quests on map
 - Show notes for quest start points, turn in points, and objectives.
