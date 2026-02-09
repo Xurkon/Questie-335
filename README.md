@@ -1,6 +1,6 @@
 # Questie-335
 
-A fork of the WoW Classic **Questie** addon aiming to provide compatibility with **Project Ebonhold**.
+A fork of the WoW Classic **Questie** addon aiming to provide compatibility with **Project Ebonhold and Project Ascension**.
 
 ## Installation
 - [Download](https://github.com/3majed/Questie-335/releases) the archive.
