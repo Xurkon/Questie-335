@@ -25,10 +25,10 @@
 
 ## Fixes
 - **Nameplates**
-  - Skips **Ascension Nameplates** and works with other addons.
+  - Skips **Project Ascension Nameplates** and works with other addons.
 
 - **Tracker**
-  1. Compatible with the Ascension API and doesn't fail with auto-turn-in quests.
+  1. Compatible with the Project Ebonhold API and doesn't fail with auto-turn-in quests.
   2. No more missing header issues.
   3. Refreshes correctly when accepting, completing, or abandoning quests.
 
@@ -43,7 +43,7 @@
   - Fixed errors when zooming the minimap.
 
 - **World Map**
-  1. Supports Ascension `WorldMapFrame` when minimized and draws icons correctly.
+  1. Supports Project Ebonhold `WorldMapFrame` when minimized and draws icons correctly.
   2. Works with **Mapster** and **Magnify-WotLK**.
 
 - **New Content (Maps & Quests)**
@@ -53,8 +53,15 @@
 
 ## Features
 
-### Ascension Scaling system
-- Scaling all quest to character level like Ascension Scaling system
+### Project Ascension Scaling system
+- Scaling all quest to character level like Project Ascension Scaling system
+> [!WARNING]
+> This feature is intended for **Project Ascension** realms only. Please disable this option if you are playing on other 3.3.5 servers to avoid incorrect quest data.
+
+### Self Learning
+- Questie now includes a self-learning feature that records quest data (objectives, locations, etc.) as you play.
+- This data is saved locally to improve accuracy for quests that may be missing or incorrect in the base database.
+- Helpful for custom content or server-specific quest modifications.
 
 ### Show quests on map
 - Show notes for quest start points, turn in points, and objectives.
