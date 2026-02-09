@@ -1,6 +1,6 @@
 # Questie-335 Changelog
 
-## [Unreleased]
+## [9.6.4]
 
 ### Added
 - **Self Learning**: Implemented a self-learning feature that allows Questie to record and save quest data (objectives, locations, etc.) encountered during gameplay that may be missing or incorrect in the database.
