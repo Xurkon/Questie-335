@@ -6,7 +6,7 @@
 ## Notes-esES: Ayundante de misión
 ## Notes-ptBR: Ajudante de missão
 ## Notes-frFR: Assistant de quête
-## Version: 9.6.3 beta
+## Version: 9.6.5
 ## RequiredDeps:
 ## OptionalDeps: Ace3, CallbackHandler-1.0, HereBeDragons, LibDataBroker-1.1, LibDBIcon-1.0, LibSharedMedia-3.0, LibStub, LibUIDropDownMenu
 ## SavedVariables: QuestieConfig
@@ -61,8 +61,10 @@ Database\MeetingStones.lua
 Database\Ascension\Bronzebeard\AscensionNpcDB.lua
 Database\Ascension\Bronzebeard\AscensionObjectDB.lua
 Database\Ascension\Bronzebeard\AscensionItemDB.lua
-Database\Ascension\Bronzebeard\AscensionQuestDB.lua
 Database\Ascension\AscensionLoader.lua
+Modules\CustomDataLoader.lua
+
+
 
 
 # Corrections
@@ -124,6 +126,7 @@ Modules\MinimapIcon.lua
 Modules\QuestieProfessions.lua
 Modules\QuestieReputation.lua
 Modules\QuestieEventHandler.lua
+Modules\QuestieLearner.lua
 Modules\Migration.lua
 Modules\QuestieMenu\Townsfolk.lua
 Modules\QuestieMenu\ClassTrainers.lua

@@ -1,6 +1,21 @@
+<div align="center">
+
 # Questie-335
 
-A fork of the WoW Classic **Questie** addon aiming to provide compatibility with **Ascension (Bronzebeard)**.
+![Version](https://img.shields.io/badge/version-v9.6.5-blue.svg?style=for-the-badge)
+![Downloads](https://img.shields.io/github/downloads/Xurkon/Questie-335/total?style=for-the-badge&color=e67e22)
+[![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/Xurkon)
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.me/Xurkon)
+![License](https://img.shields.io/github/license/Xurkon/Questie-335?style=for-the-badge&color=2980b9)
+![Lua](https://img.shields.io/badge/LUA-5.1-blue?style=for-the-badge&logo=lua&logoColor=white)
+![Platform](https://img.shields.io/badge/PLATFORM-3.3.5a-blue?style=for-the-badge&logo=windows&logoColor=white)
+
+<br/>
+**A fork of the WoW Classic Questie addon compatibility with Ascension (Bronzebeard) & Project Ebonhold**
+
+[⬇ **Download Latest**](https://github.com/Xurkon/Questie-335/releases/latest) &nbsp;&nbsp;•&nbsp;&nbsp; [📂 **View Source**](https://github.com/Xurkon/Questie-335)
+
+</div>
 
 ## Installation
 - [Download](https://github.com/3majed/Questie-335/releases) the archive.
