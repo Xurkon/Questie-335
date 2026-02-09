@@ -13,7 +13,7 @@ local l10n = QuestieLoader:ImportModule("l10n")
 --- COMPATIBILITY ---
 local addonName = QuestieCompat.Is335 and QuestieCompat.addonName or "Questie"
 
-QuestieLib.AddonPath = "Interface\\Addons\\"..addonName.."\\"
+QuestieLib.AddonPath = "Interface\\Addons\\" .. addonName .. "\\"
 
 local math_abs = math.abs
 local math_sqrt = math.sqrt
@@ -174,7 +174,7 @@ end
 ---@param showState boolean @ Whether to show (Complete/Failed)
 ---@param blizzLike boolean @True = [40+], false/nil = [40D/R]
 function QuestieLib:GetColoredQuestName(questId, showLevel, showState, blizzLike)
-    local name = QuestieDB.QueryQuestSingle(questId, "name")
+    local name = QuestieDB.QueryQuestSingle(questId, "name") or "Unknown Quest"
     local level, _ = QuestieLib.GetTbcLevel(questId);
 
     if showLevel then
@@ -193,13 +193,14 @@ function QuestieLib:GetColoredQuestName(questId, showLevel, showState, blizzLike
         elseif isComplete == 1 then
             name = name .. " " .. Questie:Colorize("(" .. l10n("Complete") .. ")", "green")
 
-        -- Quests treated as complete - zero objectives or synthetic objectives
+            -- Quests treated as complete - zero objectives or synthetic objectives
         elseif isComplete == 0 and QuestieDB.GetQuest(questId).isComplete == true then
             name = name .. " " .. Questie:Colorize("(" .. l10n("Complete") .. ")", "green")
         end
     end
 
-    return QuestieLib:PrintDifficultyColor(level, name, QuestieDB.IsRepeatable(questId), QuestieDB.IsActiveEventQuest(questId), QuestieDB.IsPvPQuest(questId))
+    return QuestieLib:PrintDifficultyColor(level, name, QuestieDB.IsRepeatable(questId),
+        QuestieDB.IsActiveEventQuest(questId), QuestieDB.IsPvPQuest(questId))
 end
 
 local colors = {
@@ -325,7 +326,6 @@ function QuestieLib.GetTbcLevel(questId, playerLevel)
     return questLevel, requiredLevel, QuestieDB.QueryQuestSingle(questId, "requiredMaxLevel")
 end
 
-
 ---@param questId QuestId
 ---@param level Level @The quest level
 ---@param blizzLike boolean @True = [40+], false/nil = [40D/R]
@@ -421,7 +421,8 @@ function QuestieLib:CacheItemNames(questId)
         for _, objectiveDB in pairs(quest.ObjectiveData) do
             if objectiveDB.Type == "item" then
                 if not ((QuestieDB.ItemPointers or QuestieDB.itemData)[objectiveDB.Id]) then
-                    Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieLib:CacheItemNames] Requesting item information for missing itemId:", objectiveDB.Id)
+                    Questie:Debug(Questie.DEBUG_DEVELOP,
+                        "[QuestieLib:CacheItemNames] Requesting item information for missing itemId:", objectiveDB.Id)
                     local item = Item:CreateFromItemID(objectiveDB.Id)
                     item:ContinueOnItemLoad(
                         function()
@@ -432,7 +433,8 @@ function QuestieLib:CacheItemNames(questId)
                                 QuestieDB.itemDataOverrides[objectiveDB.Id][1] = itemName
                             end
                             Questie:Debug(Questie.DEBUG_DEVELOP,
-                                "[QuestieLib:CacheItemNames] Created item information for item:", itemName, ":", objectiveDB.Id)
+                                "[QuestieLib:CacheItemNames] Created item information for item:", itemName, ":",
+                                objectiveDB.Id)
                         end)
                 end
             end
@@ -601,7 +603,8 @@ function QuestieLib.TrimObjectiveText(text, objectiveType)
 
     -- If the functions above do not give a good answer fall back to older regex to get something.
     if not text then
-        text = smatch(originalText, "^(.*):%s") or smatch(originalText, "%s：(.*)$") or smatch(originalText, "^(.*)：%s") or originalText
+        text = smatch(originalText, "^(.*):%s") or smatch(originalText, "%s：(.*)$") or smatch(originalText, "^(.*)：%s") or
+        originalText
     end
 
     text = strim(text)
@@ -706,7 +709,8 @@ function QuestieLib:TextWrap(line, prefix, combineTrailing, desiredWidth)
         textWrapObjectiveFontString:Hide()
     end
 
-    if (textWrapObjectiveFontString:IsVisible()) then Questie:Error("TextWrap already running... Please report this on GitHub or Discord.") end
+    if (textWrapObjectiveFontString:IsVisible()) then Questie:Error(
+        "TextWrap already running... Please report this on GitHub or Discord.") end
 
     --Set Defaults
     combineTrailing = combineTrailing or true
@@ -724,7 +728,8 @@ function QuestieLib:TextWrap(line, prefix, combineTrailing, desiredWidth)
         local startIndex = 1
         local endIndex = 2 --We should be able to start at a later index...
         --This function returns a list of size information per row, so we use this to calculate number of rows
-        local numberOfRows = #textWrapObjectiveFontString:CalculateScreenAreaFromCharacterSpan(startIndex, strlen(useLine))
+        local numberOfRows = #textWrapObjectiveFontString:CalculateScreenAreaFromCharacterSpan(startIndex,
+            strlen(useLine))
         for row = 1, numberOfRows do
             local lastSpaceIndex
             local indexes
