@@ -41,7 +41,7 @@ A fork of the WoW Classic **Questie** addon aiming to provide compatibility with
 ### Project Ascension Scaling system
 - Scaling all quest to character level like Project Ascension Scaling system
 > [!WARNING]
-> This feature is intended for **Project Ebonhold** realms only. Please disable this option if you are playing on other 3.3.5 servers to avoid incorrect quest data.
+> This feature is intended for **Project Ascension** realms only. Please disable this option if you are playing on other 3.3.5 servers to avoid incorrect quest data.
 
 ### Self Learning
 - Questie now includes a self-learning feature that records quest data (objectives, locations, etc.) as you play.
