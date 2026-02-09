@@ -10,7 +10,7 @@ A fork of the WoW Classic **Questie** addon aiming to provide compatibility with
 
 ## Fixes
 - **Nameplates**
-  - Skips **Project Ebonhold Nameplates** and works with other addons.
+  - Skips **Project Ascension Nameplates** and works with other addons.
 
 - **Tracker**
   1. Compatible with the Project Ebonhold API and doesn't fail with auto-turn-in quests.
@@ -38,8 +38,8 @@ A fork of the WoW Classic **Questie** addon aiming to provide compatibility with
 
 ## Features
 
-### Project Ebonhold Scaling system
-- Scaling all quest to character level like Project Ebonhold Scaling system
+### Project Ascension Scaling system
+- Scaling all quest to character level like Project Ascension Scaling system
 > [!WARNING]
 > This feature is intended for **Project Ebonhold** realms only. Please disable this option if you are playing on other 3.3.5 servers to avoid incorrect quest data.
 
