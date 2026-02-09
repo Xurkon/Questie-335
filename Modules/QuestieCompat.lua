@@ -1,11 +1,26 @@
----@diagnostic disable: undefined-global, return-type-mismatch, undefined-field
+---@diagnostic disable: undefined-global, return-type-mismatch, undefined-field, duplicate-set-field, assign-type-mismatch
 ---@class QuestieCompat
-QuestieCompat = setmetatable({}, {__index = _G})
+QuestieCompat = setmetatable({}, { __index = _G })
 
 -- addon is running on 3.3.5 WotLK client
 QuestieCompat.Is335 = (select(4, GetBuildInfo()) == 30300)
 
 local errorMsg = "Questie tried to call a blizzard API function that does not exist..."
+
+---@alias frame table
+---@alias QuestId number
+
+---@class GossipQuestUIInfo
+---@field title string
+---@field questLevel number
+---@field isTrivial boolean
+---@field frequency number
+---@field repeatable boolean
+---@field isLegendary boolean
+---@field isIgnored boolean
+---@field questID number
+---@field isComplete boolean
+
 
 ------------------------------------------
 -- Older client compatibility (pre 1.14.1)
@@ -65,7 +80,7 @@ end
 
 ---[Documentation](https://wowpedia.fandom.com/wiki/API_C_GossipInfo.GetAvailableQuests)
 ---Returns the available quests at a quest giver.
----@return GossipQuestUIInfo[] info
+---@return any ...
 function QuestieCompat.GetAvailableQuests()
     if C_GossipInfo and C_GossipInfo.GetAvailableQuests then
         local info = C_GossipInfo.GetAvailableQuests()
@@ -90,7 +105,7 @@ end
 
 ---[Documentation](https://wowpedia.fandom.com/wiki/API_C_GossipInfo.GetActiveQuests)
 ---Returns the quests which can be turned in at a quest giver.
----@return GossipQuestUIInfo[] info
+---@return any ...
 function QuestieCompat.GetActiveQuests()
     if C_GossipInfo and C_GossipInfo.GetActiveQuests then
         -- QuestieDB needs to be loaded locally, otherwise it will be an empty module
@@ -173,19 +188,19 @@ function QuestieCompat.GetContainerItemInfo(bagID, slot)
         local containerInfo = C_Container.GetContainerItemInfo(bagID, slot)
         if containerInfo then
             return containerInfo.iconFileID,
-                   containerInfo.stackCount,
-                   containerInfo.isLocked,
-                   containerInfo.quality,
-                   containerInfo.isReadable,
-                   containerInfo.hasLoot,
-                   containerInfo.hyperlink,
-                   containerInfo.isFiltered,
-                   containerInfo.hasNoValue,
-                   containerInfo.itemID,
-                   containerInfo.isBound
-       else
+                containerInfo.stackCount,
+                containerInfo.isLocked,
+                containerInfo.quality,
+                containerInfo.isReadable,
+                containerInfo.hasLoot,
+                containerInfo.hyperlink,
+                containerInfo.isFiltered,
+                containerInfo.hasNoValue,
+                containerInfo.itemID,
+                containerInfo.isBound
+        else
             return nil
-       end
+        end
     elseif GetContainerItemInfo then
         return GetContainerItemInfo(bagID, slot)
     end

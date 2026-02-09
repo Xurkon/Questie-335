@@ -6,7 +6,7 @@ Flow:
 ----> Game cache should have all quests in it, data of each quest may be invalid.
       If data is invalid, Wait for next QUEST_LOG_UPDATE and check again.
 -----> Game Cache ok. Call possible callback functions.
-]]--
+]] --
 
 ---@class QuestieValidateGameCache
 local QuestieValidateGameCache = QuestieLoader:CreateModule("QuestieValidateGameCache")
@@ -22,7 +22,7 @@ local GetQuestObjectives = QuestieCompat.C_QuestLog.GetQuestObjectives
 local HaveQuestData = QuestieCompat.HaveQuestData
 
 local stringByte, tremove = string.byte, table.remove
-local tpack =  QuestieLib.tpack
+local tpack = QuestieLib.tpack
 local tunpack = QuestieLib.tunpack
 
 -- 3 * (Max possible number of quests in game quest log)
@@ -50,10 +50,9 @@ function QuestieValidateGameCache.AddCallback(func, ...)
         Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieValidateGameCache] Calling a callback function imediately.")
         func(...)
     else
-        callbacks[#callbacks+1] = {func, tpack(...)}
+        callbacks[#callbacks + 1] = { func, tpack(...) }
     end
 end
-
 
 local function DestroyEventFrame()
     if eventFrame then
@@ -72,7 +71,9 @@ local function OnQuestLogUpdate()
     -- This is to wait until cache has atleast some refreshed data from a game server.
     if numberOfQuestLogUpdatesToSkip > 0 then
         numberOfQuestLogUpdatesToSkip = numberOfQuestLogUpdatesToSkip - 1
-        Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieValidateGameCache] Skipping a QUEST_LOG_UPDATE event. Quest log has entries, quests:", numEntries, numQuests)
+        Questie:Debug(Questie.DEBUG_DEVELOP,
+            "[QuestieValidateGameCache] Skipping a QUEST_LOG_UPDATE event. Quest log has entries, quests:", numEntries,
+            numQuests)
         return
     end
 
@@ -94,12 +95,14 @@ local function OnQuestLogUpdate()
                 if type(objectiveList) ~= "table" then
                     -- I couldn't find yet a quest returning nil like older code suggested for example for quest 2744, which isn't true.
                     -- I guess older code queried data before HaveQuestData() was true.
-                    Questie:Error("REPORT THIS ERROR! Quest objectives aren't a table. This may stop Questie from loading. questId =", questId)
+                    Questie:Error(
+                    "REPORT THIS ERROR! Quest objectives aren't a table. This may stop Questie from loading. questId =",
+                        questId)
                     hasInvalidObjective = true
                     objectiveList = {}
                 end
 
-                for _, objective in pairs(objectiveList) do -- objectiveList may be {}, which is also a valid cached quest in quest log
+                for _, objective in pairs(objectiveList) do                               -- objectiveList may be {}, which is also a valid cached quest in quest log
                     if (not objective.text) or (stringByte(objective.text, 1) == 32) then -- if (text starts with a space " ") then
                         -- Game hasn't cached the quest fully yet
                         isQuestLogGood = false
@@ -117,20 +120,22 @@ local function OnQuestLogUpdate()
     end
 
     if not isQuestLogGood then
-        Questie:Debug(Questie.DEBUG_INFO, "[QuestieValidateGameCache] Quest log is NOT yet okey. Good quest:", goodQuestsCount.."/"..numQuests )
+        Questie:Debug(Questie.DEBUG_INFO, "[QuestieValidateGameCache] Quest log is NOT yet okey. Good quest:",
+            goodQuestsCount .. "/" .. numQuests)
         return
     end
 
     if goodQuestsCount ~= numQuests then
-        -- This shouldn't be possible
-
-        Questie:Error("Game Cache has still a broken quest log. Good quest: "..goodQuestsCount.."/"..numQuests..". Please report this on Github or Discord!") -- Translations might not be available yet.
-        -- TODO should we stop whole addon loading progress?
+        -- This happens when Game Cache is still loading or desynced
+        Questie:Debug(Questie.DEBUG_INFO, "[QuestieValidateGameCache] Quest log count mismatch. Good quest:",
+            goodQuestsCount .. "/" .. numQuests)
+        return
     end
 
     DestroyEventFrame()
 
-    Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieValidateGameCache] Quest log is ok. Good quest:", goodQuestsCount.."/"..numQuests )
+    Questie:Debug(Questie.DEBUG_CRITICAL, "[QuestieValidateGameCache] Quest log is ok. Good quest:",
+        goodQuestsCount .. "/" .. numQuests)
 
     isCacheGood = true
 
@@ -148,7 +153,7 @@ local function OnPlayerEnteringWorld(_, _, isInitialLogin, isReloadingUi)
     if QuestieCompat.Is335 then
         isInitialLogin, isReloadingUi = false, true -- 335 Not skipping for now
     end
-    assert(isInitialLogin or isReloadingUi) -- We should get to here only at login or at /reload.
+    assert(isInitialLogin or isReloadingUi)         -- We should get to here only at login or at /reload.
 
     -- Game's quest log has still old cached data on the first QUEST_LOG_UPDATE after PLAYER_ENTERING_WORLD during login.
     -- So we need to skip that event.

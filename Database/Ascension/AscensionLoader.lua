@@ -5,6 +5,9 @@ local AscensionLoader = QuestieLoader:CreateModule("AscensionLoader")
 ---@type QuestieDB
 local QuestieDB = QuestieLoader:ImportModule("QuestieDB")
 
+---@type CustomDataLoader
+local CustomDataLoader = QuestieLoader:ImportModule("CustomDataLoader")
+
 ---@type table
 local AscensionDB = QuestieLoader:ImportModule("AscensionDB")
 _G.AscensionDB = _G.AscensionDB or AscensionDB
@@ -18,14 +21,16 @@ local function _LoadIfString(data, label)
         local fn, err = loadstring(data)
         if not fn then
             if Questie and Questie.Debug then
-                Questie:Debug(Questie.DEBUG_CRITICAL, "[AscensionLoader] loadstring failed for " .. tostring(label) .. ": " .. tostring(err))
+                Questie:Debug(Questie.DEBUG_CRITICAL,
+                    "[AscensionLoader] loadstring failed for " .. tostring(label) .. ": " .. tostring(err))
             end
             return nil
         end
         local ok, tbl = pcall(fn)
         if not ok then
             if Questie and Questie.Debug then
-                Questie:Debug(Questie.DEBUG_CRITICAL, "[AscensionLoader] executing chunk failed for " .. tostring(label) .. ": " .. tostring(tbl))
+                Questie:Debug(Questie.DEBUG_CRITICAL,
+                    "[AscensionLoader] executing chunk failed for " .. tostring(label) .. ": " .. tostring(tbl))
             end
             return nil
         end
@@ -46,6 +51,11 @@ function AscensionLoader:ApplyZoneTables()
     if _zonesApplied then return end
     if not AscensionZoneTables or not AscensionZoneTables.uiMapIdToAreaId then return end
 
+    local server, realm = CustomDataLoader:GetServerInfo()
+    if server ~= "Ascension" then
+        return
+    end
+
     local ZoneDB = QuestieLoader:ImportModule("ZoneDB")
     if not ZoneDB then return end
 
@@ -61,7 +71,7 @@ function AscensionLoader:ApplyZoneTables()
         if uiMapId and areaId then
             -- Always set these mappings (remove the nil check to ensure they're set)
             ZoneDB.private.uiMapIdToAreaId[uiMapId] = areaId
-            
+
             -- Ascension uses custom map ids for spawns/waypoints (e.g. 1238 for Northshire Valley).
             -- QuestieMap draws by converting AreaId->UiMapId, so register these ids as self-mapping.
             ZoneDB.private.areaIdToUiMapId[uiMapId] = uiMapId
@@ -72,7 +82,7 @@ function AscensionLoader:ApplyZoneTables()
             if type(ZoneDB.private.dungeons) == "table" and ZoneDB.private.dungeons[areaId] then
                 ZoneDB.private.areaIdToUiMapId[areaId] = uiMapId
             end
-            
+
             -- Register subzone to parent zone mapping so GetParentZoneId works with Ascension zones
             if uiMapId ~= areaId then
                 ZoneDB.private.subZoneToParentZone[uiMapId] = areaId
@@ -128,7 +138,7 @@ function AscensionLoader:ApplyZoneTables()
     if QuestieDB and QuestieDB.private and QuestieDB.private.zoneCache then
         QuestieDB.private.zoneCache = {}
     end
-    
+
     -- Clear auto-blacklist since zone validation might have changed
     if QuestieDB and QuestieDB.autoBlacklist then
         QuestieDB.autoBlacklist = {}
@@ -141,18 +151,27 @@ function AscensionLoader:InjectOverrides()
     if _overridesInjected then return end
     _overridesInjected = true
 
+    local server, realm = CustomDataLoader:GetServerInfo()
+    if server ~= "Ascension" then
+        if Questie and Questie.Debug then
+            Questie:Debug(Questie.DEBUG_INFO,
+                "[AscensionLoader] Skipping Ascension data (current server: " .. tostring(server) .. ")")
+        end
+        return
+    end
+
     -- Apply zone tables FIRST, before any ZoneDB functions use the local variables
     AscensionLoader:ApplyZoneTables()
 
-    QuestieDB.npcDataOverrides = QuestieDB.npcDataOverrides or {}
+    QuestieDB.npcDataOverrides    = QuestieDB.npcDataOverrides or {}
     QuestieDB.objectDataOverrides = QuestieDB.objectDataOverrides or {}
-    QuestieDB.itemDataOverrides = QuestieDB.itemDataOverrides or {}
-    QuestieDB.questDataOverrides = QuestieDB.questDataOverrides or {}
+    QuestieDB.itemDataOverrides   = QuestieDB.itemDataOverrides or {}
+    QuestieDB.questDataOverrides  = QuestieDB.questDataOverrides or {}
 
-    local npcData    = _LoadIfString(AscensionDB and AscensionDB.npcData, "AscensionDB.npcData")
-    local objectData = _LoadIfString(AscensionDB and AscensionDB.objectData, "AscensionDB.objectData")
-    local itemData   = _LoadIfString(AscensionDB and AscensionDB.itemData, "AscensionDB.itemData")
-    local questData  = _LoadIfString(AscensionDB and AscensionDB.questData, "AscensionDB.questData")
+    local npcData                 = _LoadIfString(AscensionDB and AscensionDB.npcData, "AscensionDB.npcData")
+    local objectData              = _LoadIfString(AscensionDB and AscensionDB.objectData, "AscensionDB.objectData")
+    local itemData                = _LoadIfString(AscensionDB and AscensionDB.itemData, "AscensionDB.itemData")
+    local questData               = _LoadIfString(AscensionDB and AscensionDB.questData, "AscensionDB.questData")
 
     _MergeInto(QuestieDB.npcDataOverrides, npcData)
     _MergeInto(QuestieDB.objectDataOverrides, objectData)
@@ -168,7 +187,7 @@ function AscensionLoader:InjectOverrides()
             end
         end
     end
-    
+
     -- Keep a lightweight list of custom NPC ids for search/UI
     if type(npcData) == "table" then
         QuestieDB.ascensionNpcIds = QuestieDB.ascensionNpcIds or {}
@@ -178,7 +197,7 @@ function AscensionLoader:InjectOverrides()
             end
         end
     end
-    
+
     -- Keep a lightweight list of custom object ids for search/UI
     if type(objectData) == "table" then
         QuestieDB.ascensionObjectIds = QuestieDB.ascensionObjectIds or {}
@@ -188,7 +207,7 @@ function AscensionLoader:InjectOverrides()
             end
         end
     end
-    
+
     -- Keep a lightweight list of custom item ids for search/UI
     if type(itemData) == "table" then
         QuestieDB.ascensionItemIds = QuestieDB.ascensionItemIds or {}
@@ -209,7 +228,7 @@ do
             function ZoneDB:Initialize(...)
                 -- Apply custom zones FIRST, before standard zone processing
                 AscensionLoader:ApplyZoneTables()
-                
+
                 -- Then initialize standard zones
                 return originalZoneInitialize(self, ...)
             end
@@ -266,19 +285,22 @@ do
             local name = QuestieDB.QueryQuestSingle(questId, "name")
             if not name then return nil end
 
-            local level = QuestieDB.QueryQuestSingle(questId, "level") or QuestieDB.QueryQuestSingle(questId, "questLevel")
-            local reqLevel = QuestieDB.QueryQuestSingle(questId, "requiredLevel") or QuestieDB.QueryQuestSingle(questId, "minLevel")
-            local desc = QuestieDB.QueryQuestSingle(questId, "objectiveText") or QuestieDB.QueryQuestSingle(questId, "description") or QuestieDB.QueryQuestSingle(questId, "details")
-            
+            local level = QuestieDB.QueryQuestSingle(questId, "level") or
+                QuestieDB.QueryQuestSingle(questId, "questLevel")
+            local reqLevel = QuestieDB.QueryQuestSingle(questId, "requiredLevel") or
+                QuestieDB.QueryQuestSingle(questId, "minLevel")
+            local desc = QuestieDB.QueryQuestSingle(questId, "objectiveText") or
+                QuestieDB.QueryQuestSingle(questId, "description") or QuestieDB.QueryQuestSingle(questId, "details")
+
             -- Build the Starts field from startedBy (CRITICAL for available quests to show icons!)
             local startedBy = QuestieDB.QueryQuestSingle(questId, "startedBy")
-            
+
             local starts = {
                 NPC = startedBy and startedBy[1] or {},
                 GameObject = startedBy and startedBy[2] or {},
                 Item = startedBy and startedBy[3] or {},
             }
-            
+
             -- Also get other fields needed for quest display
             local finishedBy = QuestieDB.QueryQuestSingle(questId, "finishedBy")
             local specialFlags = QuestieDB.QueryQuestSingle(questId, "specialFlags")
@@ -292,7 +314,7 @@ do
                 level = level or reqLevel or 0,
                 requiredLevel = reqLevel or 0,
                 Description = desc, -- Journey tooltip reads quest.Description
-                Starts = starts, -- CRITICAL: AvailableQuests needs this!
+                Starts = starts,    -- CRITICAL: AvailableQuests needs this!
                 finishedBy = finishedBy,
                 IsRepeatable = isRepeatable,
             }

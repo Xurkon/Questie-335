@@ -75,13 +75,13 @@ local C_Timer = QuestieCompat.C_Timer
 --]]
 
 -- flags that can be used in corrections (currently only blacklists)
-QuestieCorrections.TBC_ONLY = 1 -- Hide only in TBC
-QuestieCorrections.CLASSIC_ONLY = 2 -- Hide only in Classic
-QuestieCorrections.WOTLK_ONLY = 3 -- Hide only in Wotlk
-QuestieCorrections.TBC_AND_WOTLK = 4 -- Hide in TBC and Wotlk
-QuestieCorrections.SOD_ONLY = 5 -- Hide when *not* Season of Discovery; use for SoD-only quests
-QuestieCorrections.HIDE_SOD = 6 -- Hide when Season of Discovery; use to hide quests that are not available in SoD
-QuestieCorrections.CLASSIC_AND_TBC = 7 -- Hide in both Classic and TBC
+QuestieCorrections.TBC_ONLY = 1                  -- Hide only in TBC
+QuestieCorrections.CLASSIC_ONLY = 2              -- Hide only in Classic
+QuestieCorrections.WOTLK_ONLY = 3                -- Hide only in Wotlk
+QuestieCorrections.TBC_AND_WOTLK = 4             -- Hide in TBC and Wotlk
+QuestieCorrections.SOD_ONLY = 5                  -- Hide when *not* Season of Discovery; use for SoD-only quests
+QuestieCorrections.HIDE_SOD = 6                  -- Hide when Season of Discovery; use to hide quests that are not available in SoD
+QuestieCorrections.CLASSIC_AND_TBC = 7           -- Hide in both Classic and TBC
 
 QuestieCorrections.killCreditObjectiveFirst = {} -- Only used for TBC quests
 
@@ -142,6 +142,39 @@ local function filterExpansion(values)
     return values
 end
 
+---@param databaseTableName string The name of the QuestieDB field that should be manipulated (e.g. "itemData", "questData")
+---@param corrections table All corrections for the given databaseTableName (e.g. all quest corrections)
+---@param reversedKeys table The reverted QuestieDB keys for the given databaseTableName (e.g. QuestieDB.questKeys)
+---@param validationTables table Only used by the CI validation scripts to validate the corrections against the original database values and find irrelevant corrections
+---@param noOverwrites true? Do not overwrite existing values
+---@param noNewEntries true? Do not create new entries in the database
+local _LoadCorrections = function(databaseTableName, corrections, reversedKeys, validationTables, noOverwrites,
+                                  noNewEntries)
+    for id, data in pairs(corrections) do
+        for key, value in pairs(data) do
+            -- Create the id if missing unless noNewEntries is set
+            if not QuestieDB[databaseTableName][id] and not noNewEntries then
+                QuestieDB[databaseTableName][id] = {}
+            end
+            if validationTables and QuestieDB[databaseTableName][id] then
+                if value and QuestieLib.equals(QuestieDB[databaseTableName][id][key], value) and validationTables[databaseTableName][id] and
+                    QuestieLib.equals(validationTables[databaseTableName][id][key], value) then
+                    Questie:Warning("Correction of " ..
+                        databaseTableName ..
+                        " " .. tostring(id) .. "." .. reversedKeys[key] .. " matches base DB! Value:" .. tostring(value))
+                end
+            end
+            if QuestieDB[databaseTableName][id] then
+                if noOverwrites and QuestieDB[databaseTableName][id][key] == nil then
+                    QuestieDB[databaseTableName][id][key] = value
+                elseif not noOverwrites then
+                    QuestieDB[databaseTableName][id][key] = value
+                end
+            end
+        end
+    end
+end
+
 do
     local type, assert = type, assert
     --- Add runtime overrides for the database
@@ -166,7 +199,6 @@ do
     end
 
     function QuestieCorrections:MinimalInit() -- db already compiled
-
         -- Classic Era Corrections
         addOverride(QuestieDB.itemDataOverrides, QuestieItemFixes:LoadFactionFixes())
         addOverride(QuestieDB.npcDataOverrides, QuestieNPCFixes:LoadFactionFixes())
@@ -229,12 +261,45 @@ do
 
         if Questie.db.profile.showEventQuests then
             C_Timer.After(1, function()
-                 -- This is done with a delay because on startup the Blizzard API seems to be
-                 -- very slow and therefore the date calculation in QuestieEvents isn't done
-                 -- correctly.
+                -- This is done with a delay because on startup the Blizzard API seems to be
+                -- very slow and therefore the date calculation in QuestieEvents isn't done
+                -- correctly.
                 QuestieEvent:Load()
             end)
         end
+
+        QuestieCorrections:LoadCustomCorrections()
+    end
+end
+
+function QuestieCorrections:LoadCustomCorrections()
+    local realmName = GetRealmName()
+    if Questie.db.global.serverData and Questie.db.global.serverData[realmName] then
+        local serverData = Questie.db.global.serverData[realmName]
+        Questie:Debug(Questie.DEBUG_INFO, "[Corrections] Loading custom corrections for realm:", realmName)
+
+        -- Load Custom Quests
+        if serverData.quests then
+            -- Validation/Transformation could happen here if needed.
+            -- Current QuestEventHandler records directly into compatible format (Key -> Value)
+            -- But we need to be careful about table references.
+
+            -- _LoadCorrections expects: {[id] = {[key] = value}}
+            -- serverData.quests structure: {[id] = {[key] = value}}
+            -- Perfect match?
+
+            _LoadCorrections("questData", serverData.quests, QuestieDB.questKeys, nil, false, false)
+        end
+
+        -- Load Custom NPC Spawns
+        if serverData.npc_spawns then
+            -- serverData.npc_spawns structure: {[id] = {[key] = value}} where value is {[zone] = coords}
+            -- _LoadCorrections expects: {[id] = {[key] = value}}
+
+            _LoadCorrections("npcData", serverData.npc_spawns, QuestieDB.npcKeys, nil, false, false)
+        end
+
+        -- Future: Item Drops, Object Spawns
     end
 end
 
@@ -244,37 +309,15 @@ end
 ---@param validationTables table Only used by the CI validation scripts to validate the corrections against the original database values and find irrelevant corrections
 ---@param noOverwrites true? Do not overwrite existing values
 ---@param noNewEntries true? Do not create new entries in the database
-local _LoadCorrections = function(databaseTableName, corrections, reversedKeys, validationTables, noOverwrites, noNewEntries)
-    for id, data in pairs(corrections) do
-        for key, value in pairs(data) do
-            -- Create the id if missing unless noNewEntries is set
-            if not QuestieDB[databaseTableName][id] and not noNewEntries then
-                QuestieDB[databaseTableName][id] = {}
-            end
-            if validationTables and QuestieDB[databaseTableName][id] then
-                if value and QuestieLib.equals(QuestieDB[databaseTableName][id][key], value) and validationTables[databaseTableName][id] and
-                    QuestieLib.equals(validationTables[databaseTableName][id][key], value) then
-                    Questie:Warning("Correction of " ..
-                                    databaseTableName .. " " .. tostring(id) .. "." .. reversedKeys[key] .. " matches base DB! Value:" .. tostring(value))
-                end
-            end
-            if QuestieDB[databaseTableName][id] then
-                if noOverwrites and QuestieDB[databaseTableName][id][key] == nil then
-                    QuestieDB[databaseTableName][id][key] = value
-                elseif not noOverwrites then
-                    QuestieDB[databaseTableName][id][key] = value
-                end
-            end
-        end
-    end
-end
+
 
 ---@param validationTables table? Only used by the CI validation scripts to validate the corrections against the original database values and find irrelevant corrections
 function QuestieCorrections:Initialize(validationTables)
     QuestieQuestFixes:LoadMissingQuests()
 
     -- Classic Corrections
-    _LoadCorrections("questData", QuestieClassicQuestReputationFixes:Load(), QuestieDB.questKeysReversed, validationTables)
+    _LoadCorrections("questData", QuestieClassicQuestReputationFixes:Load(), QuestieDB.questKeysReversed,
+        validationTables)
     _LoadCorrections("questData", QuestieQuestFixes:Load(), QuestieDB.questKeysReversed, validationTables)
     _LoadCorrections("npcData", QuestieNPCFixes:Load(), QuestieDB.npcKeysReversed, validationTables)
     _LoadCorrections("itemData", QuestieItemFixes:Load(), QuestieDB.itemKeysReversed, validationTables)
@@ -302,14 +345,35 @@ function QuestieCorrections:Initialize(validationTables)
         _LoadCorrections("npcData", SeasonOfDiscovery:LoadNPCs(), QuestieDB.npcKeysReversed, validationTables)
         _LoadCorrections("itemData", SeasonOfDiscovery:LoadBaseItems(), QuestieDB.itemKeysReversed, validationTables)
         _LoadCorrections("itemData", SeasonOfDiscovery:LoadItems(), QuestieDB.itemKeysReversed, validationTables)
-        _LoadCorrections("objectData", SeasonOfDiscovery:LoadBaseObjects(), QuestieDB.objectKeysReversed, validationTables)
+        _LoadCorrections("objectData", SeasonOfDiscovery:LoadBaseObjects(), QuestieDB.objectKeysReversed,
+            validationTables)
         _LoadCorrections("objectData", SeasonOfDiscovery:LoadObjects(), QuestieDB.objectKeysReversed, validationTables)
     end
 
     --- Corrections that apply to all versions
-    _LoadCorrections("itemData", QuestieItemStartFixes:LoadAutomaticQuestStarts(), QuestieDB.itemKeysReversed, validationTables, true, true)
+    _LoadCorrections("itemData", QuestieItemStartFixes:LoadAutomaticQuestStarts(), QuestieDB.itemKeysReversed,
+        validationTables, true, true)
 
     if QuestieCompat.Is335 then QuestieCompat.LoadCorrections(_LoadCorrections, validationTables) end
+
+    -- Load Custom Server Data (Ascension Recorder)
+    if Questie.db.global.serverData then
+        local realmName = GetRealmName()
+        if Questie.db.global.serverData[realmName] then
+            local serverData = Questie.db.global.serverData[realmName]
+            if serverData.quests then
+                _LoadCorrections("questData", serverData.quests, QuestieDB.questKeysReversed, validationTables)
+            end
+            if serverData.npc_spawns then
+                _LoadCorrections("npcData", serverData.npc_spawns, QuestieDB.npcKeysReversed, validationTables)
+            end
+            -- obj_spawns not yet implemented in recorder but good to have
+            if serverData.object_spawns then
+                _LoadCorrections("objectData", serverData.object_spawns, QuestieDB.objectKeysReversed, validationTables)
+            end
+            Questie:Debug(Questie.DEBUG_INFO, "[QuestieCorrections] Loaded custom server data for realm: " .. realmName)
+        end
+    end
 
     local patchCount = 0
     for _, quest in pairs(QuestieDB.questData) do
@@ -351,7 +415,6 @@ function QuestieCorrections:Initialize(validationTables)
     end
 
     QuestieCorrections:MinimalInit()
-
 end
 
 local WAYPOINT_MIN_DISTANCE = 1.5 -- todo: make this a config value maybe?
@@ -378,7 +441,7 @@ function QuestieCorrections:OptimizeWaypoints(waypointData)
     for zone, waypointList in pairs(waypointData) do
         local newWaypointList = {}
         if waypointList[1] and type(waypointList[1][1]) == "number" then
-            waypointList = {waypointList} -- corrections support both {{x,y}, ...} and {{{x,y}, ...}, {{x,y}, ...}, ...}
+            waypointList = { waypointList } -- corrections support both {{x,y}, ...} and {{{x,y}, ...}, {{x,y}, ...}, ...}
         end
         for _, waypoints in pairs(waypointList) do
             -- apply RDP algorithm
@@ -395,21 +458,22 @@ function QuestieCorrections:OptimizeWaypoints(waypointData)
                 if lastWay then
                     local dist = euclid(way[1], way[2], lastWay[1], lastWay[2])
                     if dist > minDist then
-                        local divs = math.ceil(dist/minDist)
-                        for i=1,divs do
-                            local mul0 = i/divs
-                            local mul1 = 1-mul0
-                            newWaypoints[#newWaypoints+1] = {way[1] * mul0 + lastWay[1] * mul1, way[2] * mul0 + lastWay[2] * mul1}
+                        local divs = math.ceil(dist / minDist)
+                        for i = 1, divs do
+                            local mul0 = i / divs
+                            local mul1 = 1 - mul0
+                            newWaypoints[#newWaypoints + 1] = { way[1] * mul0 + lastWay[1] * mul1, way[2] * mul0 +
+                            lastWay[2] * mul1 }
                         end
                     else
-                        newWaypoints[#newWaypoints+1] = way
+                        newWaypoints[#newWaypoints + 1] = way
                     end
                 else
-                    newWaypoints[#newWaypoints+1] = way
+                    newWaypoints[#newWaypoints + 1] = way
                 end
                 lastWay = way
             end
-            newWaypointList[#newWaypointList+1] = newWaypoints
+            newWaypointList[#newWaypointList + 1] = newWaypoints
         end
         newWaypointZones[zone] = newWaypointList
     end

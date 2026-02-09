@@ -60,6 +60,7 @@ function QuestEventHandler:RegisterEvents()
     eventFrame:RegisterEvent("QUEST_REMOVED")
     eventFrame:RegisterEvent("QUEST_LOG_UPDATE")
     eventFrame:RegisterEvent("QUEST_WATCH_UPDATE")
+    eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
     eventFrame:RegisterEvent("UNIT_QUEST_LOG_CHANGED")
     eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     eventFrame:RegisterEvent("NEW_RECIPE_LEARNED") -- Spell objectives; Runes in SoD count as recipes because "Engraving" is a profession?
@@ -68,6 +69,7 @@ function QuestEventHandler:RegisterEvents()
     eventFrame:RegisterEvent("PLAYER_INTERACTION_MANAGER_FRAME_HIDE")
 
     eventFrame:RegisterEvent("CHAT_MSG_COMBAT_FACTION_CHANGE")
+    eventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") -- For mob kill recording
     eventFrame:SetScript("OnEvent", _QuestEventHandler.OnEvent)
 
     -- StaticPopup dialog hooks. Deleteing Quest items do not always trigger a Quest Log Update.
@@ -104,7 +106,8 @@ function QuestEventHandler:RegisterEvents()
                             sourceItemId = quest.sourceItemId
 
                             if sourceItemId then
-                                soureItemName, _, _, _, _, sourceItemType, _, _, _, _, _, soureClassID = GetItemInfo(sourceItemId)
+                                soureItemName, _, _, _, _, sourceItemType, _, _, _, _, _, soureClassID = GetItemInfo(
+                                    sourceItemId)
                             end
                         end
 
@@ -112,7 +115,8 @@ function QuestEventHandler:RegisterEvents()
                             reqSourceItemId = quest.requiredSourceItems[1]
 
                             if reqSourceItemId then
-                                reqSoureItemName, _, _, _, _, reqSourceItemType, _, _, _, _, _, reqSoureClassID = GetItemInfo(reqSourceItemId)
+                                reqSoureItemName, _, _, _, _, reqSourceItemType, _, _, _, _, _, reqSoureClassID =
+                                    GetItemInfo(reqSourceItemId)
                             end
                         end
 
@@ -120,7 +124,7 @@ function QuestEventHandler:RegisterEvents()
                             questName = quest.name
                             foundQuestItem = true
                             break
-                        elseif reqSourceItemId and reqSoureItemName and reqSourceItemType and reqSoureClassID and (reqSourceItemType == "Quest" or reqSoureClassID == 12) and QuestieDB.QueryItemSingle(reqSourceItemId, "class") == 12 and text_arg1 == reqSoureItemName then
+                        elseif reqSourceItemId and reqSoureItemName and reqSoureItemType and reqSoureClassID and (reqSoureItemType == "Quest" or reqSoureClassID == 12) and QuestieDB.QueryItemSingle(reqSourceItemId, "class") == 12 and text_arg1 == reqSoureItemName then
                             questName = quest.name
                             foundQuestItem = true
                             break
@@ -151,14 +155,16 @@ function QuestEventHandler:RegisterEvents()
                 end
 
                 if frame ~= nil and text ~= nil then
-                    local updateText = l10n("Quest Item %%s might be needed for the quest %%s. \n\nAre you sure you want to delete this?")
+                    local updateText = l10n(
+                        "Quest Item %%s might be needed for the quest %%s. \n\nAre you sure you want to delete this?")
                     text:SetFormattedText(updateText, text_arg1, questName)
                     text.text_arg1 = updateText
 
                     StaticPopup_Resize(frame, which)
                     deletedQuestItem = true
 
-                    Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest] StaticPopup_Show: Quest Item Detected. Updating Static Popup.")
+                    Questie:Debug(Questie.DEBUG_DEVELOP,
+                        "[QuestieQuest] StaticPopup_Show: Quest Item Detected. Updating Static Popup.")
                 end
             end
         end
@@ -167,16 +173,156 @@ function QuestEventHandler:RegisterEvents()
     hooksecurefunc("DeleteCursorItem", function()
         -- Hook DeleteCursorItem so we know when the player clicks the Accept button
         if deletedQuestItem then
-            Questie:Debug(Questie.DEBUG_DEVELOP, "[QuestieQuest] DeleteCursorItem: Quest Item deleted. Update all quests.")
+            Questie:Debug(Questie.DEBUG_DEVELOP,
+                "[QuestieQuest] DeleteCursorItem: Quest Item deleted. Update all quests.")
 
             C_Timer.After(0.25, function()
-				_QuestEventHandler:UpdateAllQuests()
-				deletedQuestItem = false
-			end)
+                _QuestEventHandler:UpdateAllQuests()
+                deletedQuestItem = false
+            end)
         end
     end)
 
     _QuestEventHandler:InitQuestLog()
+end
+
+function QuestEventHandler:RecordQuestAccept(questId)
+    -- Only record if it's a custom/missing quest
+    local realmName = GetRealmName()
+    if Questie.db.global.serverData and Questie.db.global.serverData[realmName] and Questie.db.global.serverData[realmName].quests[questId] then
+        -- It's a custom quest!
+        local targetGUID = UnitGUID("target")
+        if targetGUID then
+            local unit_type, _, _, _, _, npcId = strsplit("-", targetGUID)
+            if unit_type == "Creature" or unit_type == "Vehicle" then
+                npcId = tonumber(npcId)
+                -- Record Quest Starter
+                local questKeys = QuestieDB.questKeys
+                local serverData = Questie.db.global.serverData[realmName]
+
+                local startedBy = questKeys.startedBy
+                if not serverData.quests[questId][startedBy] then serverData.quests[questId][startedBy] = {} end
+                if not serverData.quests[questId][startedBy][1] then serverData.quests[questId][startedBy][1] = {} end
+
+                local found = false
+                for _, id in pairs(serverData.quests[questId][startedBy][1]) do
+                    if id == npcId then
+                        found = true
+                        break
+                    end
+                end
+
+                if not found then
+                    table.insert(serverData.quests[questId][startedBy][1], npcId)
+                    Questie:Debug(Questie.DEBUG_INFO,
+                        "[Recorder] Recorded starter NPC " .. npcId .. " for quest " .. questId)
+                end
+
+                -- Record NPC Spawn
+                if not serverData.npc_spawns[npcId] then serverData.npc_spawns[npcId] = {} end
+                local zoneId = C_Map.GetBestMapForUnit("player")
+                if zoneId then
+                    local x, y = C_Map.GetPlayerMapPosition(zoneId, "player"):GetXY()
+                    local spawnKey = QuestieDB.npcKeys.spawns
+                    -- Structure: npcData[id][spawns] = {[zoneID] = {{x,y}, ...}}
+                    -- But serverData.npc_spawns[npcId] is the Value of the npcData entry?
+                    -- _LoadCorrections iterates serverData.npc_spawns -> id, data.
+                    -- So data should be {[spawns] = ...}.
+                    -- Wait, _LoadCorrections signature: (databaseTableName, corrections, ...)
+                    -- corrections = {[id] = {[key] = value}}
+                    -- So serverData.npc_spawns should be {[npcId] = {[npcKeys.spawns] = {[zoneId] = {{x,y}}}}}.
+
+                    -- My previous implementation was: serverData.npc_spawns[npcId][zoneId] = ...
+                    -- This is WRONG for _LoadCorrections if called directly as `npcData` source.
+                    -- _LoadCorrections expects: {[npcId] = {[npcKeys.spawns] = ...}}
+
+                    -- REFACTORING NPC SPAWN RECORDING:
+                    if not serverData.npc_spawns[npcId] then serverData.npc_spawns[npcId] = {} end
+                    if not serverData.npc_spawns[npcId][spawnKey] then serverData.npc_spawns[npcId][spawnKey] = {} end
+                    if not serverData.npc_spawns[npcId][spawnKey][zoneId] then serverData.npc_spawns[npcId][spawnKey][zoneId] = {} end
+
+                    table.insert(serverData.npc_spawns[npcId][spawnKey][zoneId], { x * 100, y * 100 })
+                end
+            end
+        end
+    end
+end
+
+function QuestEventHandler:RecordQuestTurnIn(questId)
+    -- Only record if it's a custom/missing quest
+    local realmName = GetRealmName()
+    if Questie.db.global.serverData and Questie.db.global.serverData[realmName] and Questie.db.global.serverData[realmName].quests[questId] then
+        -- It's a custom quest!
+        local targetGUID = UnitGUID("target")
+        if targetGUID then
+            local unit_type, _, _, _, _, npcId = strsplit("-", targetGUID)
+            if unit_type == "Creature" or unit_type == "Vehicle" then
+                npcId = tonumber(npcId)
+                -- Record Quest Finisher
+                local questKeys = QuestieDB.questKeys
+                local serverData = Questie.db.global.serverData[realmName]
+
+                local finishedBy = questKeys.finishedBy
+                if not serverData.quests[questId][finishedBy] then serverData.quests[questId][finishedBy] = {} end
+                if not serverData.quests[questId][finishedBy][1] then serverData.quests[questId][finishedBy][1] = {} end
+
+                local found = false
+                for _, id in pairs(serverData.quests[questId][finishedBy][1]) do
+                    if id == npcId then
+                        found = true
+                        break
+                    end
+                end
+
+                if not found then
+                    table.insert(serverData.quests[questId][finishedBy][1], npcId)
+                    Questie:Debug(Questie.DEBUG_INFO,
+                        "[Recorder] Recorded finisher NPC " .. npcId .. " for quest " .. questId)
+                end
+                -- Record NPC Spawn (Finisher location is also useful)
+                local spawnKey = QuestieDB.npcKeys.spawns
+                if not serverData.npc_spawns[npcId] then serverData.npc_spawns[npcId] = {} end
+                local zoneId = C_Map.GetBestMapForUnit("player")
+                if zoneId then
+                    local x, y = C_Map.GetPlayerMapPosition(zoneId, "player"):GetXY()
+                    if not serverData.npc_spawns[npcId][spawnKey] then serverData.npc_spawns[npcId][spawnKey] = {} end
+                    if not serverData.npc_spawns[npcId][spawnKey][zoneId] then serverData.npc_spawns[npcId][spawnKey][zoneId] = {} end
+
+                    table.insert(serverData.npc_spawns[npcId][spawnKey][zoneId], { x * 100, y * 100 })
+                end
+            end
+        end
+    end
+end
+
+function QuestEventHandler:RecordMobKill(destGUID)
+    local unit_type, _, _, _, _, npcId = strsplit("-", destGUID)
+    if unit_type == "Creature" or unit_type == "Vehicle" then
+        npcId = tonumber(npcId)
+
+        -- Check if this mob relates to any ACTIVE custom quest objectives
+        local realmName = GetRealmName()
+        if Questie.db.global.serverData and Questie.db.global.serverData[realmName] then
+            local serverData = Questie.db.global.serverData[realmName]
+
+            -- We need to check active quests in the log to see if any just updated?
+            -- Actually, scanning all active custom quests is safer.
+            for questId, _ in pairs(serverData.quests) do
+                if Questie.db.char.complete and not Questie.db.char.complete[questId] then
+                    -- Quest is not complete, is it in log?
+                    local logIndex = GetQuestLogIndexByID(questId)
+                    if logIndex and logIndex > 0 then
+                        -- It's in the log. Check objectives.
+                        -- This is hard to do perfectly without parsing the objective text "Slay 10 Boars"
+                        -- But we can try to heuristic match or just record the spawn if we *know* it's needed?
+                        -- For now, just recording the spawn location of ANY mob we kill is too much spam.
+                        -- We need a way to know if this mob *credit* a quest.
+                        -- That's usually done by watching UQLC event.
+                    end
+                end
+            end
+        end
+    end
 end
 
 --- On Login mark all quests in the quest log with QUEST_ACCEPTED state
@@ -184,9 +330,9 @@ function _QuestEventHandler:InitQuestLog()
     -- Fill the QuestLogCache for first time
     local cacheMiss, changes = QuestLogCache.CheckForChanges(nil)
     -- if cacheMiss then
-        -- TODO actually can happen in rare edge case if player accepts new quest during questie init. *cough*
-        -- or if someone managed to overflow game cache already at this point.
-        --Questie:Error("Did you accept a quest during InitQuestLog? Please report on Github or Discord. Game's quest log cache is not ok. This shouldn't happen. Questie may malfunction.")
+    -- TODO actually can happen in rare edge case if player accepts new quest during questie init. *cough*
+    -- or if someone managed to overflow game cache already at this point.
+    --Questie:Error("Did you accept a quest during InitQuestLog? Please report on Github or Discord. Game's quest log cache is not ok. This shouldn't happen. Questie may malfunction.")
     -- end
 
     for questId, _ in pairs(changes) do
@@ -228,7 +374,7 @@ function _QuestEventHandler:QuestAccepted(questLogIndex, questId)
     QuestieCombatQueue:Queue(function()
         QuestieLib:CacheItemNames(questId)
         _QuestEventHandler:HandleQuestAccepted(questId)
-		QuestieTracker:Update()
+        QuestieTracker:Update()
     end)
 
     Questie:Debug(Questie.DEBUG_DEVELOP, "[Quest Event] QUEST_ACCEPTED - skipNextUQLCEvent - ", skipNextUQLCEvent)
@@ -237,13 +383,13 @@ end
 ---@param questId number
 ---@return boolean true @if the function was successful, false otherwise
 function _QuestEventHandler:HandleQuestAccepted(questId)
-	local idx = QuestieCompat.GetQuestLogIndexByID(questId)
-	if not idx then
-		_QuestLogUpdateQueue:Insert(function()
-			return _QuestEventHandler:HandleQuestAccepted(questId)
-		end)
-		return false
-	end
+    local idx = QuestieCompat.GetQuestLogIndexByID(questId)
+    if not idx then
+        _QuestLogUpdateQueue:Insert(function()
+            return _QuestEventHandler:HandleQuestAccepted(questId)
+        end)
+        return false
+    end
     -- We first check the quest objectives and retry in the next QLU event if they are not correct yet
     local cacheMiss, changes = QuestLogCache.CheckForChanges({ [questId] = true })
     if cacheMiss then
@@ -269,9 +415,9 @@ function _QuestEventHandler:HandleQuestAccepted(questId)
     else
         QuestieQuest:AcceptQuest(questId)
     end
-	QuestieCompat.C_Timer.After(0.2, function()
-		QuestieTracker:Update()
-	end)
+    QuestieCompat.C_Timer.After(0.2, function()
+        QuestieTracker:Update()
+    end)
     return true
 end
 
@@ -295,7 +441,7 @@ function _QuestEventHandler:QuestTurnedIn(questId, xpReward, moneyReward)
         -- is empty
         questLog[questId].state = QUEST_LOG_STATES.QUEST_TURNED_IN
     elseif QuestieCompat.Is335 then
-        questLog[questId] = {state = QUEST_LOG_STATES.QUEST_TURNED_IN}
+        questLog[questId] = { state = QUEST_LOG_STATES.QUEST_TURNED_IN }
     end
 
     local parentQuest = QuestieDB.QueryQuestSingle(questId, "parentQuest")
@@ -310,7 +456,8 @@ function _QuestEventHandler:QuestTurnedIn(questId, xpReward, moneyReward)
     local itemName, _, _, quality, _, itemID = GetQuestLogRewardInfo(GetNumQuestLogRewards(questId), questId)
 
     if (itemID ~= nil or itemName ~= nil) and quality == 1 then
-        Questie:Debug(Questie.DEBUG_DEVELOP, "Quest:", questId, "Recieved a possible Quest Item - do a full Quest Log check")
+        Questie:Debug(Questie.DEBUG_DEVELOP, "Quest:", questId,
+            "Recieved a possible Quest Item - do a full Quest Log check")
         doFullQuestLogScan = true
         skipNextUQLCEvent = false
     else
@@ -325,11 +472,11 @@ function _QuestEventHandler:QuestTurnedIn(questId, xpReward, moneyReward)
     -- QuestieQuest:CompleteQuest(questId)
     -- QuestieJourney:CompleteQuest(questId)
     -- QuestieAnnounce:CompletedQuest(questId)
-	-- questLog[questId] = nil
+    -- questLog[questId] = nil
 
-QuestieCombatQueue:Queue(function()
-    QuestieTracker:Update()
-end)
+    QuestieCombatQueue:Queue(function()
+        QuestieTracker:Update()
+    end)
 end
 
 --- Fires when a quest is removed from the quest log. This includes turning it in and abandoning it.
@@ -348,12 +495,12 @@ function _QuestEventHandler:QuestRemoved(questId)
     -- QUEST_TURNED_IN was called before QUEST_REMOVED --> quest was turned in
     if questLog[questId].state == QUEST_LOG_STATES.QUEST_TURNED_IN then
         Questie:Debug(Questie.DEBUG_INFO, "Quest:", questId, "was turned in before. Completing quest.")
-        
+
         -- Now that we confirmed the quest was actually turned in (not abandoned), mark it as complete
         QuestieQuest:CompleteQuest(questId)
         QuestieJourney:CompleteQuest(questId)
         QuestieAnnounce:CompletedQuest(questId)
-        
+
         questLog[questId] = nil
         return
     end
@@ -377,7 +524,8 @@ function _QuestEventHandler:MarkQuestAsAbandoned(questId)
 
     -- so we don't attempt to index a nil value.
     if (not questEntry) then
-        Questie:Debug(Questie.DEBUG_DEVELOP, "QuestEventHandler:MarkQuestAsAbandoned - questLog entry missing for", questId)
+        Questie:Debug(Questie.DEBUG_DEVELOP, "QuestEventHandler:MarkQuestAsAbandoned - questLog entry missing for",
+            questId)
         return
     end
 
@@ -409,7 +557,9 @@ function _QuestEventHandler:QuestLogUpdate()
     if doFullQuestLogScan then
         doFullQuestLogScan = false
         -- Function call updates doFullQuestLogScan. Order matters.
-        _QuestEventHandler:UpdateAllQuests()
+        QuestieCombatQueue:Queue(function()
+            _QuestEventHandler:UpdateAllQuests()
+        end)
     else
         _QuestEventHandler:CleanupRemovedQuestsFallback()
         QuestieCombatQueue:Queue(function()
@@ -458,7 +608,6 @@ function _QuestEventHandler:UnitQuestLogChanged(unitTarget)
     end
     skipNextUQLCEvent = false
 end
-
 
 -- Fallback cleanup: some servers remove quests without firing QUEST_REMOVED reliably.
 -- This compares Questie's currentQuestlog vs the game's quest log and removes stale quests.
@@ -530,8 +679,7 @@ function _QuestEventHandler:UpdateAllQuests()
 
     if next(changes) then
         for questId, objIds in pairs(changes) do
-            --Questie:Debug(Questie.DEBUG_INFO, "Quest:", questId, "objectives:", table.concat(objIds, ","), "will be updated")
-            Questie:Debug(Questie.DEBUG_INFO, "Quest:", questId, "will be updated")
+            Questie:Debug(Questie.DEBUG_INFO, "Quest:", questId, "will be updated. Changed Obj count:", #objIds)
             QuestieQuest:SetObjectivesDirty(questId)
 
             QuestieNameplate:UpdateNameplate()
@@ -543,7 +691,7 @@ function _QuestEventHandler:UpdateAllQuests()
             end)
         end)
     else
-        Questie:Debug(Questie.DEBUG_INFO, "Nothing to update")
+        Questie:Debug(Questie.DEBUG_INFO, "Nothing to update. CacheMiss:", cacheMiss, "Changes count:", #changes)
     end
 
 
@@ -608,7 +756,7 @@ function _QuestEventHandler:ZoneChangedNewArea()
             end
         end)
 
-    -- We only want this to fire outside of an instance if the player isn't dead and we need to reset the Tracker
+        -- We only want this to fire outside of an instance if the player isn't dead and we need to reset the Tracker
     elseif (not Questie.db.char.isTrackerExpanded and not UnitIsGhost("player")) and trackerMinimizedByDungeon == true then
         C_Timer.After(8, function()
             Questie:Debug(Questie.DEBUG_DEVELOP, "[EVENT] ZONE_CHANGED_NEW_AREA: Exiting Instance")
@@ -628,8 +776,10 @@ end
 function _QuestEventHandler:OnEvent(event, ...)
     if event == "QUEST_ACCEPTED" then
         _QuestEventHandler:QuestAccepted(...)
+        QuestEventHandler:RecordQuestAccept(...)
     elseif event == "QUEST_TURNED_IN" then
         _QuestEventHandler:QuestTurnedIn(...)
+        QuestEventHandler:RecordQuestTurnIn(...)
     elseif event == "QUEST_REMOVED" then
         _QuestEventHandler:QuestRemoved(...)
     elseif event == "QUEST_LOG_UPDATE" then
@@ -666,5 +816,66 @@ function _QuestEventHandler:OnEvent(event, ...)
         _QuestEventHandler:QuestRelatedFrameClosed(event)
     elseif event == "CHAT_MSG_COMBAT_FACTION_CHANGE" then
         _QuestEventHandler:ReputationChange()
+    elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
+        local _, subEvent, _, _, _, destGUID = ...
+        if subEvent == "PARTY_KILL" then
+            QuestEventHandler:RecordMobKill(destGUID)
+        end
+    elseif event == "LOOT_OPENED" then
+        QuestEventHandler:RecordLoot()
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        Questie:Debug(Questie.DEBUG_DEVELOP, "[Quest Event] PLAYER_REGEN_ENABLED")
+        QuestieQuest:SmoothReset()
+    end
+end
+
+function QuestEventHandler:RecordLoot()
+    -- Identify source
+    local sourceGUID = UnitGUID("target") or UnitGUID("mouseover") -- rough guess
+    if not sourceGUID then return end
+
+    local realmName = GetRealmName()
+    -- We only care if this source drops an item for a CUSTOM quest
+    if not Questie.db.global.serverData[realmName] then return end
+
+    local numItems = GetNumLootItems()
+    for i = 1, numItems do
+        local _, _, _, _, _, _, isQuestItem, questId, isActive = GetLootSlotInfo(i)
+        if isQuestItem and questId and isActive then
+            -- Verify it is a custom quest
+            if Questie.db.global.serverData[realmName].quests[questId] then
+                -- It is! Record the drop source.
+                -- We need the Item ID to link it?
+                local link = GetLootSlotLink(i)
+                local itemId = link and tonumber(string.match(link, "item:(%d+)"))
+
+                if itemId then
+                    local unit_type, _, _, _, _, npcId = strsplit("-", sourceGUID)
+                    npcId = tonumber(npcId)
+
+                    if (unit_type == "Creature" or unit_type == "Vehicle") and npcId then
+                        local serverData = Questie.db.global.serverData[realmName]
+                        -- Store item drop info?
+                        -- Ideally we link Item -> NPC
+                        -- serverData.item_drops[itemId] = { [npcId] = true }
+                        if not serverData.item_drops then serverData.item_drops = {} end
+                        if not serverData.item_drops[itemId] then serverData.item_drops[itemId] = {} end
+
+                        local found = false
+                        for _, id in pairs(serverData.item_drops[itemId]) do
+                            if id == npcId then
+                                found = true
+                                break
+                            end
+                        end
+                        if not found then
+                            table.insert(serverData.item_drops[itemId], npcId)
+                            Questie:Debug(Questie.DEBUG_INFO,
+                                "[Recorder] Recorded item drop " .. itemId .. " from " .. npcId)
+                        end
+                    end
+                end
+            end
+        end
     end
 end
